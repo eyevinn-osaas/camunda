@@ -17,18 +17,21 @@ package io.camunda.zeebe.client.impl.search;
 
 import io.camunda.zeebe.client.api.search.response.DecisionDefinition;
 import io.camunda.zeebe.client.api.search.response.DecisionRequirements;
+import io.camunda.zeebe.client.api.search.response.FlownodeInstance;
 import io.camunda.zeebe.client.api.search.response.ProcessInstance;
 import io.camunda.zeebe.client.api.search.response.SearchQueryResponse;
 import io.camunda.zeebe.client.api.search.response.SearchResponsePage;
 import io.camunda.zeebe.client.api.search.response.UserTask;
 import io.camunda.zeebe.client.impl.search.response.DecisionDefinitionImpl;
 import io.camunda.zeebe.client.impl.search.response.DecisionRequirementsImpl;
+import io.camunda.zeebe.client.impl.search.response.FlownodeInstanceImpl;
 import io.camunda.zeebe.client.impl.search.response.ProcessInstanceImpl;
 import io.camunda.zeebe.client.impl.search.response.SearchQueryResponseImpl;
 import io.camunda.zeebe.client.impl.search.response.SearchResponsePageImpl;
 import io.camunda.zeebe.client.impl.search.response.UserTaskImpl;
 import io.camunda.zeebe.client.protocol.rest.DecisionDefinitionSearchQueryResponse;
 import io.camunda.zeebe.client.protocol.rest.DecisionRequirementsSearchQueryResponse;
+import io.camunda.zeebe.client.protocol.rest.FlownodeInstanceSearchQueryResponse;
 import io.camunda.zeebe.client.protocol.rest.ProcessInstanceSearchQueryResponse;
 import io.camunda.zeebe.client.protocol.rest.SearchQueryPageResponse;
 import io.camunda.zeebe.client.protocol.rest.UserTaskSearchQueryResponse;
@@ -64,6 +67,14 @@ public final class SearchResponseMapper {
     final SearchResponsePage page = toSearchResponsePage(response.getPage());
     final List<DecisionDefinition> instances =
         toSearchResponseInstances(response.getItems(), DecisionDefinitionImpl::new);
+    return new SearchQueryResponseImpl<>(instances, page);
+  }
+
+  public static SearchQueryResponse<FlownodeInstance> toFlownodeInstanceSearchResponse(
+      final FlownodeInstanceSearchQueryResponse response) {
+    final SearchResponsePage page = toSearchResponsePage(response.getPage());
+    final List<FlownodeInstance> instances =
+        toSearchResponseInstances(response.getItems(), FlownodeInstanceImpl::new);
     return new SearchQueryResponseImpl<>(instances, page);
   }
 

@@ -13,33 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.camunda.zeebe.client.api.search.response;
+package io.camunda.zeebe.client.impl.search.sort;
 
-public interface FlownodeInstance {
+import io.camunda.zeebe.client.api.search.sort.FlownodeInstanceSort;
+import io.camunda.zeebe.client.impl.search.query.SearchQuerySortBase;
 
-  Long getKey();
+public class FlownodeInstanceSortImpl extends SearchQuerySortBase<FlownodeInstanceSort>
+    implements FlownodeInstanceSort {
 
-  Long getProcessDefinitionKey();
-
-  Long getProcessInstanceKey();
-
-  String getFlowNodeId();
-
-  String getFlowNodeName();
-
-  String getStartDate();
-
-  String getEndDate();
-
-  Boolean getIncident();
-
-  Long getIncidentKey();
-
-  String getState();
-
-  String getTenantId();
-
-  String getTreePath();
-
-  String getType();
+  @Override
+  protected FlownodeInstanceSort self() {
+    return this;
+  }
 }

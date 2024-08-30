@@ -81,6 +81,7 @@ import io.camunda.zeebe.client.impl.http.HttpClient;
 import io.camunda.zeebe.client.impl.http.HttpClientFactory;
 import io.camunda.zeebe.client.impl.search.query.DecisionDefinitionQueryImpl;
 import io.camunda.zeebe.client.impl.search.query.DecisionRequirementsQueryImpl;
+import io.camunda.zeebe.client.impl.search.query.FlownodeInstanceQueryImpl;
 import io.camunda.zeebe.client.impl.search.query.ProcessInstanceQueryImpl;
 import io.camunda.zeebe.client.impl.search.query.UserTaskQueryImpl;
 import io.camunda.zeebe.client.impl.util.ExecutorResource;
@@ -494,7 +495,7 @@ public final class ZeebeClientImpl implements ZeebeClient {
 
   @Override
   public FlownodeInstanceQuery newFlownodeInstanceQuery() {
-    return null;
+    return new FlownodeInstanceQueryImpl(httpClient, jsonMapper);
   }
 
   @Override
