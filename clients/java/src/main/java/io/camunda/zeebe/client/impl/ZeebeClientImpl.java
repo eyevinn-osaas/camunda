@@ -51,6 +51,7 @@ import io.camunda.zeebe.client.api.command.UpdateUserTaskCommandStep1;
 import io.camunda.zeebe.client.api.response.ActivatedJob;
 import io.camunda.zeebe.client.api.search.query.DecisionDefinitionQuery;
 import io.camunda.zeebe.client.api.search.query.DecisionRequirementsQuery;
+import io.camunda.zeebe.client.api.search.query.FlownodeInstanceQuery;
 import io.camunda.zeebe.client.api.search.query.ProcessInstanceQuery;
 import io.camunda.zeebe.client.api.search.query.UserTaskQuery;
 import io.camunda.zeebe.client.api.worker.JobClient;
@@ -489,6 +490,11 @@ public final class ZeebeClientImpl implements ZeebeClient {
   @Override
   public ProcessInstanceQuery newProcessInstanceQuery() {
     return new ProcessInstanceQueryImpl(httpClient, jsonMapper);
+  }
+
+  @Override
+  public FlownodeInstanceQuery newFlownodeInstanceQuery() {
+    return null;
   }
 
   @Override
