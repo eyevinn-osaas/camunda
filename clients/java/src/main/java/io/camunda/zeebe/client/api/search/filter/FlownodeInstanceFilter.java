@@ -19,25 +19,91 @@ import io.camunda.zeebe.client.api.search.query.TypedSearchQueryRequest.SearchRe
 
 public interface FlownodeInstanceFilter extends SearchRequestFilter {
 
+  /**
+   * Filters flow node instances by the specified key.
+   *
+   * @param value the key of flow node instance
+   * @return the updated filter
+   */
   FlownodeInstanceFilter key(final long value);
 
+  /**
+   * Filters flow node instances by process definition key.
+   *
+   * @param value the process definition key of flow node instance
+   * @return the updated filter
+   */
   FlownodeInstanceFilter processDefinitionKey(final long value);
 
+  /**
+   * Filters flow node instances by process instance key.
+   *
+   * @param value the process instance key of flow node instance
+   * @return the updated filter
+   */
   FlownodeInstanceFilter processInstanceKey(final long value);
 
+  /**
+   * Filters flow node instances by flow node id.
+   *
+   * @param value the flow node id of flow node instance
+   * @return the updated filter
+   */
   FlownodeInstanceFilter flowNodeId(final String value);
 
+  /**
+   * Filters flow node instances by flow node name.
+   *
+   * @param value the flow node name of flow node instance
+   * @return the updated filter
+   */
   FlownodeInstanceFilter flowNodeName(final String value);
 
+  /**
+   * Filters flow node instances by state.
+   *
+   * @param value the state of flow node instance
+   * @return the updated filter
+   */
   FlownodeInstanceFilter state(final String value);
 
+  /**
+   * Filters flow node instances by type.
+   *
+   * @param value the type of flow node instance
+   * @return the updated filter
+   */
   FlownodeInstanceFilter type(final String value);
 
+  /**
+   * Filters flow node instances by incident (has an incident)
+   *
+   * @param value has the flow node instance an incident
+   * @return the updated filter
+   */
   FlownodeInstanceFilter incident(final boolean value);
 
+  /**
+   * Filters flow node instances by incident key.
+   *
+   * @param value the incident key for flow node instance
+   * @return the updated filter
+   */
   FlownodeInstanceFilter incidentKey(final long value);
 
+  /**
+   * Filters flow node instances by tree path.
+   *
+   * @param value the tree path of flow node instance
+   * @return the updated filter
+   */
   FlownodeInstanceFilter treePath(final String value);
 
+  /**
+   * Filters flow node instances by tenant id.
+   *
+   * @param value the tenant id for flow node instance
+   * @return the updated filter
+   */
   FlownodeInstanceFilter tenantId(final String value);
 }

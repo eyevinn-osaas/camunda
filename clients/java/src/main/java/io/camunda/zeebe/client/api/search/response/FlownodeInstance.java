@@ -17,29 +17,42 @@ package io.camunda.zeebe.client.api.search.response;
 
 public interface FlownodeInstance {
 
+  /** key */
   Long getKey();
 
+  /** process definition key for flow node instance */
   Long getProcessDefinitionKey();
 
+  /** process instance key for flow node instance */
   Long getProcessInstanceKey();
 
+  /** flow node id for flow node instance */
   String getFlowNodeId();
 
+  /** flow node name for flow node instance */
   String getFlowNodeName();
 
+  /** start date of flow node instance */
   String getStartDate();
 
+  /** end date of flow node instance */
   String getEndDate();
 
+  /** whether flow node instance has an incident */
   Boolean getIncident();
 
+  /** incident key for flow node instance */
   Long getIncidentKey();
 
+  /** state of flow node instance */
   String getState();
 
+  /** tenant id for flow node instance */
   String getTenantId();
 
+  /** tree path of flow node instance */
   String getTreePath();
 
+  /** type of flow node instance */
   String getType();
 }
