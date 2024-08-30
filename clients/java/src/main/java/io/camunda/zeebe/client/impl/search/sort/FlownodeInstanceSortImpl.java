@@ -25,4 +25,59 @@ public class FlownodeInstanceSortImpl extends SearchQuerySortBase<FlownodeInstan
   protected FlownodeInstanceSort self() {
     return this;
   }
+
+  @Override
+  public FlownodeInstanceSort key() {
+    return field("key");
+  }
+
+  @Override
+  public FlownodeInstanceSort processInstanceKey() {
+    return field("processInstanceKey");
+  }
+
+  @Override
+  public FlownodeInstanceSort processDefinitionKey() {
+    return field("processDefinitionKey");
+  }
+
+  @Override
+  public FlownodeInstanceSort startDate() {
+    return field("startDate");
+  }
+
+  @Override
+  public FlownodeInstanceSort endDate() {
+    return field("endDate");
+  }
+
+  @Override
+  public FlownodeInstanceSort flowNodeId() {
+    return field("flowNodeId");
+  }
+
+  @Override
+  public FlownodeInstanceSort flowNodeName() {
+    return field("flowNodeName");
+  }
+
+  @Override
+  public FlownodeInstanceSort type() {
+    return field("type");
+  }
+
+  @Override
+  public FlownodeInstanceSort state() {
+    return field("state");
+  }
+
+  @Override
+  public FlownodeInstanceSort incidentKey() {
+    return field("incidentKey");
+  }
+
+  @Override
+  public FlownodeInstanceSort tenantId() {
+    return field("tenantId");
+  }
 }

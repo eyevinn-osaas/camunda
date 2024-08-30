@@ -17,4 +17,27 @@ package io.camunda.zeebe.client.api.search.sort;
 
 import io.camunda.zeebe.client.api.search.query.TypedSearchQueryRequest.SearchRequestSort;
 
-public interface FlownodeInstanceSort extends SearchRequestSort<FlownodeInstanceSort> {}
+public interface FlownodeInstanceSort extends SearchRequestSort<FlownodeInstanceSort> {
+
+  FlownodeInstanceSort key();
+
+  FlownodeInstanceSort processInstanceKey();
+
+  FlownodeInstanceSort processDefinitionKey();
+
+  FlownodeInstanceSort startDate();
+
+  FlownodeInstanceSort endDate();
+
+  FlownodeInstanceSort flowNodeId();
+
+  FlownodeInstanceSort flowNodeName();
+
+  FlownodeInstanceSort type();
+
+  FlownodeInstanceSort state();
+
+  FlownodeInstanceSort incidentKey();
+
+  FlownodeInstanceSort tenantId();
+}

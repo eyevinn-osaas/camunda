@@ -30,6 +30,72 @@ public class FlownodeInstanceFilterImpl
   }
 
   @Override
+  public FlownodeInstanceFilter key(final long value) {
+    filter.setKey(value);
+    return this;
+  }
+
+  @Override
+  public FlownodeInstanceFilter processDefinitionKey(final long value) {
+    filter.setProcessDefinitionKey(value);
+    return this;
+  }
+
+  @Override
+  public FlownodeInstanceFilter processInstanceKey(final long value) {
+    filter.setProcessInstanceKey(value);
+    return this;
+  }
+
+  @Override
+  public FlownodeInstanceFilter flowNodeId(final String value) {
+    filter.setFlowNodeId(value);
+    return this;
+  }
+
+  @Override
+  public FlownodeInstanceFilter flowNodeName(final String value) {
+    filter.setFlowNodeName(value);
+    return this;
+  }
+
+  @Override
+  public FlownodeInstanceFilter state(final String value) {
+    filter.setState(value);
+    return this;
+  }
+
+  @Override
+  public FlownodeInstanceFilter type(final String value) {
+    filter.setType(value);
+    return this;
+  }
+
+  @Override
+  public FlownodeInstanceFilter incident(final boolean value) {
+    filter.setIncident(value);
+    return this;
+  }
+
+  @Override
+  public FlownodeInstanceFilter incidentKey(final long value) {
+    filter.setIncidentKey(value);
+    return this;
+  }
+
+  @Override
+  public FlownodeInstanceFilter treePath(final String value) {
+    filter.setTreePath(value);
+    return this;
+  }
+
+  @Override
+  public FlownodeInstanceFilter tenantId(final String value) {
+    filter.setTenantId(value);
+    return this;
+  }
+
+  @Override
   protected FlownodeInstanceFilterRequest getSearchRequestProperty() {
     return filter;
   }

@@ -17,4 +17,27 @@ package io.camunda.zeebe.client.api.search.filter;
 
 import io.camunda.zeebe.client.api.search.query.TypedSearchQueryRequest.SearchRequestFilter;
 
-public interface FlownodeInstanceFilter extends SearchRequestFilter {}
+public interface FlownodeInstanceFilter extends SearchRequestFilter {
+
+  FlownodeInstanceFilter key(final long value);
+
+  FlownodeInstanceFilter processDefinitionKey(final long value);
+
+  FlownodeInstanceFilter processInstanceKey(final long value);
+
+  FlownodeInstanceFilter flowNodeId(final String value);
+
+  FlownodeInstanceFilter flowNodeName(final String value);
+
+  FlownodeInstanceFilter state(final String value);
+
+  FlownodeInstanceFilter type(final String value);
+
+  FlownodeInstanceFilter incident(final boolean value);
+
+  FlownodeInstanceFilter incidentKey(final long value);
+
+  FlownodeInstanceFilter treePath(final String value);
+
+  FlownodeInstanceFilter tenantId(final String value);
+}
