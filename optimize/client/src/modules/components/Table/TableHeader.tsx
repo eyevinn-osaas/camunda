@@ -98,7 +98,7 @@ export default function TableHeader({
 
   const {role, ...reactTableHeaderProps} = header.getHeaderProps();
 
-  const headerProps = {
+  const {key, ...headerProps} = {
     ...getSortingProps(header),
     ...reactTableHeaderProps,
     className: classNames('tableHeader', {placeholder: header.placeholderOf}),
@@ -107,7 +107,7 @@ export default function TableHeader({
   };
 
   return (
-    <CarbonTableHeader {...headerProps} ref={rewriteHeaderStyles(headerProps.style)}>
+    <CarbonTableHeader key={key} {...headerProps} ref={rewriteHeaderStyles(headerProps.style)}>
       <Tooltip content={header.title} overflowOnly>
         <span className="text">{header.render('Header')}</span>
       </Tooltip>

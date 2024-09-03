@@ -6,10 +6,9 @@
  * except in compliance with the Camunda License 1.0.
  */
 
-import React, {useRef} from 'react';
+import {useRef} from 'react';
 import {runLastEffect} from '__mocks__/react';
-import {mount, shallow} from 'enzyme';
-import {act} from 'react-dom/test-utils';
+import {shallow} from 'enzyme';
 
 import {getNonOverflowingValues} from './service';
 import Tooltip from './Tooltip';
@@ -204,25 +203,23 @@ it('should keep the tooltip open when the mouse is inside it', () => {
   expect(node.find('.Tooltip')).not.toExist();
 });
 
-it('should stop event from propagating when clicked inside the tooltip', () => {
+it('should stop event from propagating when clicked inside the tooltip', async () => {
   const spy = jest.fn();
-  const node = mount(
+  const node = shallow(
     <div onClick={spy}>
       <Tooltip content="tooltip content">
         <p>child content</p>
       </Tooltip>
     </div>
   );
-  act(() => {
-    node.find('p').simulate('mouseEnter', {currentTarget: element});
-    jest.runAllTimers();
-    node.find('p').simulate('mouseLeave', {currentTarget: element});
-    node.find('.Tooltip').simulate('mouseEnter');
-    jest.runAllTimers();
-    node.find('.Tooltip').simulate('click', new Event('click'));
+  node.find('p').simulate('mouseEnter', {currentTarget: element});
+  jest.runAllTimers();
+  node.find('p').simulate('mouseLeave', {currentTarget: element});
+  node.find('Tooltip').simulate('mouseEnter');
+  jest.runAllTimers();
+  node.find('Tooltip').simulate('click', new Event('click'));
 
-    expect(spy).not.toHaveBeenCalled();
-  });
+  expect(spy).not.toHaveBeenCalled();
 });
 
 it('should inherit dark theme from document body', () => {

@@ -6,6 +6,7 @@
  * except in compliance with the Camunda License 1.0.
  */
 
+import {act} from 'react';
 import {mount, shallow} from 'enzyme';
 
 import Popover from './Popover';
@@ -33,7 +34,7 @@ it('should open/close popover based on listbox trigger', () => {
 
   expect(node.find('.popoverContent').exists()).toBe(false);
 
-  node.find(Popover.ListBox).find('button').simulate('click');
+  node.find('ListBox button').simulate('click');
 
   expect(node.find('.popoverContent').exists()).toBe(true);
 });
@@ -45,7 +46,7 @@ it('should open/close popover based on button trigger', () => {
 
   expect(node.find('.popoverContent').exists()).toBe(false);
 
-  node.find(Popover.Button).simulate('click');
+  node.find('ButtonTrigger button').simulate('click');
 
   expect(node.find('.popoverContent').exists()).toBe(true);
 });

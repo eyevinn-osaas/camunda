@@ -6,8 +6,8 @@
  * except in compliance with the Camunda License 1.0.
  */
 
-import {mount, ReactWrapper} from 'enzyme';
-import {ReactNode} from 'react';
+import {CommonWrapper, mount, shallow} from 'enzyme';
+import {ReactNode, act} from 'react';
 
 import {getScreenBounds} from 'services';
 
@@ -62,7 +62,7 @@ afterEach(() => {
 });
 
 function simulateDropdown(
-  node: ReactWrapper<Dropdown['props'], Dropdown['state'], Dropdown>,
+  node: CommonWrapper<Dropdown['props'], Dropdown['state'], Dropdown>,
   {
     oneItemHeight,
     buttonPosition,
@@ -115,7 +115,7 @@ it('should render without crashing', () => {
 it('should contain the specified label', () => {
   const node = mount(<Dropdown label="Click me" />);
 
-  expect(node).toIncludeText('Click me');
+  expect(node.find('span').at(0)).toIncludeText('Click me');
 });
 
 it('should display the child elements when clicking the trigger', () => {
@@ -125,7 +125,11 @@ it('should display the child elements when clicking the trigger', () => {
     </Dropdown>
   );
 
-  node.find('button.activateButton').simulate('click');
+  act(() => {
+    node.find('button.activateButton').simulate('click');
+  });
+
+  node.update();
 
   expect(node.find('.Dropdown')).toMatchSelector('.is-open');
 });
@@ -138,7 +142,9 @@ it('should call onOpen if provided', () => {
     </Dropdown>
   );
 
-  node.find('button.activateButton').simulate('click');
+  act(() => {
+    node.find('button.activateButton').simulate('click');
+  });
 
   expect(spy).toHaveBeenCalledWith(true);
 });
@@ -150,12 +156,14 @@ it('should close when clicking somewhere', () => {
     </Dropdown>
   );
 
-  node.setState({open: true});
+  act(() => {
+    node.setState({open: true});
 
-  node.simulate('click');
+    node.simulate('click');
 
-  expect(node.state('open')).toBe(false);
-  expect(node.find('.Dropdown')).not.toMatchSelector('.is-open');
+    expect(node.state('open')).toBe(false);
+    expect(node.find('.Dropdown')).not.toMatchSelector('.is-open');
+  });
 });
 
 it('should close when selecting an option', () => {
@@ -167,7 +175,9 @@ it('should close when selecting an option', () => {
     </Dropdown>
   );
 
-  node.setState({open: true});
+  act(() => {
+    node.setState({open: true});
+  });
 
   node.find('.test_option').simulate('click');
 
@@ -194,9 +204,7 @@ it('should set aria-expanded to false by default', () => {
     </Dropdown>
   );
 
-  expect(node.find('button.activateButton')).toMatchSelector(
-    '.activateButton[aria-expanded="false"]'
-  );
+  expect(node.find('.activateButton[aria-expanded="false"]')).toExist();
 });
 
 it('should set aria-expanded to true when open', () => {
@@ -206,12 +214,14 @@ it('should set aria-expanded to true when open', () => {
     </Dropdown>
   );
 
-  node.simulate('click');
+  act(() => {
+    node.simulate('click');
+  });
+
+  node.update();
 
   expect(node.state('open')).toBe(true);
-  expect(node.find('button.activateButton')).toMatchSelector(
-    '.activateButton[aria-expanded="true"]'
-  );
+  expect(node.find('.activateButton[aria-expanded="true"]')).toExist();
 });
 
 it('should set aria-expanded to false when closed', () => {
@@ -221,14 +231,15 @@ it('should set aria-expanded to false when closed', () => {
     </Dropdown>
   );
 
-  node.setState({open: true});
+  act(() => {
+    node.setState({open: true});
+    node.simulate('click');
 
-  node.simulate('click');
+    node.update();
 
-  expect(node.state('open')).toBe(false);
-  expect(node.find('button.activateButton')).toMatchSelector(
-    '.activateButton[aria-expanded="false"]'
-  );
+    expect(node.state('open')).toBe(false);
+    expect(node.find('.activateButton[aria-expanded="false"]')).toExist();
+  });
 });
 
 it('should set aria-labelledby on the menu as provided as a prop, amended by "-button"', () => {
@@ -238,7 +249,7 @@ it('should set aria-labelledby on the menu as provided as a prop, amended by "-b
     </Dropdown>
   );
 
-  expect(node.find('.menu')).toMatchSelector('.menu[aria-labelledby="my-dropdown-button"]');
+  expect(node.find('.menu[aria-labelledby="my-dropdown-button"]')).toExist();
 });
 
 it('should close after pressing Esc', () => {
@@ -249,11 +260,13 @@ it('should close after pressing Esc', () => {
     </Dropdown>
   );
 
-  node.setState({open: true});
+  act(() => {
+    node.setState({open: true});
 
-  node.simulate('keyDown', {key: 'Escape', keyCode: 27, which: 27});
+    node.simulate('keyDown', {key: 'Escape', keyCode: 27, which: 27});
 
-  expect(node.state('open')).toBe(false);
+    expect(node.state('open')).toBe(false);
+  });
 });
 
 it('should not change focus after pressing an arrow key if closed', () => {
@@ -265,9 +278,14 @@ it('should not change focus after pressing an arrow key if closed', () => {
     {attachTo: container}
   );
 
-  node.find('button').first().getDOMNode<HTMLElement>().focus();
+  act(() => {
+    node.find('button').first().simulate('click');
 
-  node.simulate('keyDown', {key: 'ArrowDown'});
+    node.simulate('keyDown', {key: 'ArrowDown'});
+  });
+
+  node.update();
+
   expect(document.activeElement?.textContent).toBe('Click me');
 });
 
@@ -280,14 +298,21 @@ it('should change focus after pressing an arrow key if opened', () => {
     {attachTo: container}
   );
 
-  node.find('button').first().getDOMNode<HTMLElement>().focus();
+  act(() => {
+    node.find('button').first().simulate('click');
 
-  node.instance().setState({open: true});
+    node.instance().setState({open: true});
 
-  node.simulate('keyDown', {key: 'ArrowDown'});
-  expect(document.activeElement?.textContent).toBe('foo');
-  node.simulate('keyDown', {key: 'ArrowDown'});
-  expect(document.activeElement?.textContent).toBe('bar');
+    node.simulate('keyDown', {
+      key: 'ArrowDown',
+    });
+
+    expect(document.activeElement?.textContent).toBe('foo');
+    node.simulate('keyDown', {
+      key: 'ArrowDown',
+    });
+    expect(document.activeElement?.textContent).toBe('bar');
+  });
 });
 
 it('should pass open, offset, setOpened, setClosed, forceToggle and closeParent properties to submenus', () => {
@@ -307,7 +332,7 @@ it('should pass open, offset, setOpened, setClosed, forceToggle and closeParent 
 });
 
 it('should add scrollable class when there is no enough space to show all items', () => {
-  const node = mount<Dropdown>(<Dropdown label="label" />);
+  const node = shallow<Dropdown>(<Dropdown label="label" />);
 
   const specs = {
     oneItemHeight: 30,
@@ -328,7 +353,7 @@ it('should add scrollable class when there is no enough space to show all items'
 });
 
 it('flip dropdown vertically when there is no enough space', () => {
-  const node = mount<Dropdown>(
+  const node = shallow<Dropdown>(
     <Dropdown label="label">
       <Dropdown.Option>1</Dropdown.Option>
       <Dropdown.Option>2</Dropdown.Option>
@@ -366,19 +391,21 @@ it('should not add scrollable class when the item is flipped and there is enough
     </Dropdown>
   );
 
-  simulateDropdown(node, {
-    oneItemHeight: 30,
-    buttonPosition: {top: 500, bottom: 535, left: 0, height: 10, width: 100},
-    menuHeight: 400,
-    menuPosition: {top: 503},
-    screenBottom: 550,
-    screenTop: 10,
+  act(() => {
+    simulateDropdown(node, {
+      oneItemHeight: 30,
+      buttonPosition: {top: 500, bottom: 535, left: 0, height: 10, width: 100},
+      menuHeight: 400,
+      menuPosition: {top: 503},
+      screenBottom: 550,
+      screenTop: 10,
+    });
+
+    node.instance().calculateMenuStyle(true);
+    node.update();
+
+    expect(node.find('.menu > ul').first()).not.toHaveClassName('scrollable');
   });
-
-  node.instance().calculateMenuStyle(true);
-  node.update();
-
-  expect(node.find('.menu > ul').first()).not.toHaveClassName('scrollable');
 });
 
 it('should invoke findLetterOption when typing a character', () => {

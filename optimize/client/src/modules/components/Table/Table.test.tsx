@@ -6,10 +6,10 @@
  * except in compliance with the Camunda License 1.0.
  */
 
-import {runAllEffects} from '__mocks__/react';
-import {shallow, mount} from 'enzyme';
-import {act} from 'react-dom/test-utils';
-import {TableHeader} from '@carbon/react';
+import {act} from 'react';
+import {runAllEffects, runLastEffect} from '__mocks__/react';
+import {shallow} from 'enzyme';
+import {Pagination, TableHeader} from '@carbon/react';
 
 import {Select} from 'components';
 
@@ -81,53 +81,55 @@ it('should format structured body data', () => {
 });
 
 it('should show pagination if data contains more than 20 rows', () => {
-  const node = mount(<Table {...{head: ['a'], body: generateData(21)}} />);
+  const node = shallow(<Table {...{head: ['a'], body: generateData(21)}} />);
 
-  expect(node.find('.cds--pagination')).toExist();
+  expect(node.find('DataTable').dive().find(Pagination)).toExist();
 });
 
 it('should not show pagination if data contains more than 20 rows, but disablePagination flag is set', () => {
-  const node = mount(<Table {...{head: ['a'], body: generateData(21)}} disablePagination />);
+  const node = shallow(<Table {...{head: ['a'], body: generateData(21)}} disablePagination />);
 
-  expect(node.find('.cds--pagination')).not.toExist();
+  expect(node.find('DataTable').dive().find(Pagination)).not.toExist();
 });
 
 it('should not show pagination if data contains less than or equal to 20 rows', () => {
   const node = shallow(<Table {...{head: ['a'], body: generateData(20)}} />);
 
-  expect(node.find('.cds--pagination')).not.toExist();
+  expect(node.find('DataTable').dive().find(Pagination)).not.toExist();
 });
 
 it('should call the updateSorting method on click on header', () => {
   const spy = jest.fn();
-  const node = mount(<Table {...{head: ['a'], body: generateData(20)}} updateSorting={spy} />);
+  const node = shallow(<Table {...{head: ['a'], body: generateData(20)}} updateSorting={spy} />);
 
-  node.find('thead th button').at(0).simulate('click', {persist: jest.fn()});
+  node.find('DataTable').dive().find('TableHeader').dive().simulate('click', {persist: jest.fn()});
+
+  runAllEffects();
 
   expect(spy).toHaveBeenCalledWith('a', 'asc');
 });
 
 it('should call the updateSorting method to sort by key/value if result is map', () => {
   const spy = jest.fn();
-  const node = mount(
+  const node = shallow(
     <Table {...{head: ['a'], body: generateData(20), resultType: 'map'}} updateSorting={spy} />
   );
 
-  node.find('thead th button').at(0).simulate('click', {persist: jest.fn()});
+  node.find('DataTable').dive().find('TableHeader').dive().simulate('click', {persist: jest.fn()});
 
   expect(spy).toHaveBeenCalledWith('key', 'asc');
 });
 
 it('should call the updateSorting method to sort by Label if sortByLabel is true', () => {
   const spy = jest.fn();
-  const node = mount(
+  const node = shallow(
     <Table
       {...{head: ['a'], body: generateData(20), sortByLabel: true, resultType: 'map'}}
       updateSorting={spy}
     />
   );
 
-  node.find('thead th button').at(0).simulate('click', {persist: jest.fn()});
+  node.find('DataTable').dive().find('TableHeader').dive().simulate('click', {persist: jest.fn()});
 
   expect(spy).toHaveBeenCalledWith('label', 'asc');
 });
@@ -145,79 +147,102 @@ it('should show empty message if all columns are hidden', () => {
 });
 
 it('should add a noOverflow classname to tds with Selects', () => {
-  const node = mount(<Table head={['a']} body={[[<Select id="id" children={[]} />]]} />);
+  const node = shallow(<Table head={['a']} body={[[<Select id="id" children={[]} />]]} />);
 
-  expect(node.find('td')).toHaveClassName('noOverflow');
+  expect(node.find('DataTable').dive().find('TableCell').dive()).toHaveClassName('noOverflow');
 });
 
 it('should show a loading state when specified', () => {
-  const node = mount(<Table head={['a']} body={[]} loading />);
+  const node = shallow(<Table head={['a']} body={[]} loading />);
 
   expect(node.find('.loading')).toExist();
-  expect(node.find('DataTableSkeleton')).toExist();
+  expect(node.find('DataTable').dive().find('DataTableSkeleton')).toExist();
   expect(node.find('TableBody')).not.toExist();
 });
 
 it('should use manual pagination values if specified', () => {
-  const node = mount(<Table head={['a']} body={[]} totalEntries={250} defaultPageSize={100} />);
+  const node = shallow(<Table head={['a']} body={[]} totalEntries={250} defaultPageSize={100} />);
 
-  expect(node.find('.cds--pagination')).toIncludeText('page 1 of 3');
+  expect(node.find('DataTable').dive().find(Pagination).dive()).toIncludeText('page 1 of 3');
 });
 
 it('should invoke fetchData when the page is change', async () => {
   const spy = jest.fn();
-  const node = mount(
+  const node = shallow(
     <Table head={['a']} body={[]} fetchData={spy} totalEntries={250} defaultPageSize={100} />
   );
 
-  await act(async () => {
-    await runAllEffects();
-    node.find('button.cds--pagination__button--forward').simulate('click');
-    runAllEffects();
+  node
+    .find('DataTable')
+    .dive()
+    .find(Pagination)
+    .dive()
+    .find('.cds--pagination__button--forward')
+    .simulate('click');
+  runAllEffects();
 
-    expect(spy).toHaveBeenCalledWith({pageIndex: 1, pageSize: 100});
-  });
+  expect(spy).toHaveBeenCalledWith({pageIndex: 1, pageSize: 100});
 });
 
 it('should go to the last page if data changes in a way that current page is empty', async () => {
   const spy = jest.fn();
-  const node = mount(<Table head={['a']} body={[]} fetchData={spy} totalEntries={100} />);
+  const node = shallow(<Table head={['a']} body={[]} fetchData={spy} totalEntries={100} />);
 
-  await act(async () => {
-    await runAllEffects();
+  await runAllEffects();
 
-    while (!node.find('button.cds--pagination__button--forward').prop('disabled')) {
-      node.find('button.cds--pagination__button--forward').simulate('click');
-      runAllEffects();
-    }
-
-    spy.mockClear();
-    node.setProps({totalEntries: 50});
+  while (
+    !node
+      .find('DataTable')
+      .dive()
+      .find(Pagination)
+      .dive()
+      .find('.cds--pagination__button--forward')
+      .prop('disabled')
+  ) {
+    node
+      .find('DataTable')
+      .dive()
+      .find(Pagination)
+      .dive()
+      .find('.cds--pagination__button--forward')
+      .simulate('click');
     runAllEffects();
+  }
 
-    expect(spy).toHaveBeenCalledWith({pageIndex: 4, pageSize: 20});
-  });
+  spy.mockClear();
+  node.setProps({totalEntries: 50});
+  runAllEffects();
+
+  expect(spy).toHaveBeenCalledWith({pageIndex: 4, pageSize: 20});
 });
 
 it('should be sorted asc by default when allowed to sort locally', () => {
-  const node = mount(<Table {...{head: ['a'], body: generateData(21)}} allowLocalSorting />);
+  const node = shallow(<Table {...{head: ['a'], body: generateData(21)}} allowLocalSorting />);
 
-  expect(node.find(TableHeader).prop('sortDirection')).toBe('ASC');
-  expect(node.find('td').at(0).childAt(0).prop('value')).toBe('0');
+  expect(node.find('DataTable').dive().find('TableHeader').dive().prop('sortDirection')).toBe(
+    'ASC'
+  );
+  expect(
+    node.find('DataTable').dive().find('TableCell').at(0).dive().childAt(0).prop('value')
+  ).toBe('0');
 });
 
 it('should change sorting to desc when clicked on header', () => {
-  const node = mount(<Table {...{head: ['a'], body: generateData(21)}} allowLocalSorting />);
+  const node = shallow(<Table {...{head: ['a'], body: generateData(21)}} allowLocalSorting />);
 
-  node.find('thead th button').simulate('click', {persist: jest.fn()});
-  expect(node.find(TableHeader).prop('sortDirection')).toBe('DESC');
-  expect(node.find('td').at(0).childAt(0).prop('value')).toBe('20');
+  node.find('DataTable').dive().find('TableHeader').dive().simulate('click', {persist: jest.fn()});
+  expect(node.find('DataTable').dive().find('TableHeader').dive().prop('sortDirection')).toBe(
+    'DESC'
+  );
+  expect(
+    node.find('DataTable').dive().find('TableCell').at(0).dive().childAt(0).prop('value')
+  ).toBe('20');
 });
 
 it('should default loading state columns and rows count', () => {
-  const node = mount(<Table head={[]} body={[]} loading />);
+  const node = shallow(<Table head={[]} body={[]} loading />);
 
-  const skeleton = node.find('DataTableSkeleton');
+  const skeleton = node.find('DataTable').dive().find('DataTableSkeleton');
 
   expect(skeleton).toExist();
   expect(skeleton.prop('columnCount')).toBe(3);
@@ -225,11 +250,11 @@ it('should default loading state columns and rows count', () => {
 });
 
 it('should display error in page if specified', () => {
-  const node = mount(
+  const node = shallow(
     <Table head={['a']} body={generateData(21)} errorInPage={<div className="test" />} />
   );
 
-  expect(node.find('.cds--pagination')).toExist();
-  expect(node.find('.test')).toExist();
-  expect(node.find('tbody')).not.toExist();
+  expect(node.find('DataTable').dive().find(Pagination)).toExist();
+  expect(node.find('DataTable').dive().find('.test')).toExist();
+  expect(node.find('DataTable').dive().find('tbody')).not.toExist();
 });

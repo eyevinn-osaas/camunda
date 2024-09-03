@@ -14,6 +14,7 @@ import {getScreenBounds} from 'services';
 import Submenu from './Submenu';
 import DropdownOption from './DropdownOption';
 import {findLetterOption} from './service';
+import {act} from 'react';
 
 jest.mock('./DropdownOption', () => {
   return (props: any) => {
@@ -51,7 +52,9 @@ it('should change focus after pressing an arrow key', () => {
     }
   );
 
-  node.setProps({open: true});
+  act(() => {
+    node.setProps({open: true});
+  });
 
   const container = node.find('.childrenContainer');
 
@@ -114,7 +117,7 @@ it('should open the submenu when right arrow is pressed', () => {
 
 it('should shift the submenu up when there is no space available', () => {
   (getScreenBounds as jest.Mock).mockReturnValueOnce({top: 10, bottom: 100});
-  const node = mount<Submenu>(<Submenu label="label" />);
+  const node = shallow<Submenu>(<Submenu label="label" />);
 
   node.instance().containerRef = {
     current: {
@@ -165,11 +168,12 @@ it('should invoke onClose when closing the submenu', () => {
 
 it('should open the submenu to left if specified', () => {
   jest
-    .spyOn<Element, 'parentNode', 'get', HTMLElement | null>(
-      document.activeElement!,
+    .spyOn<
+      Element,
       'parentNode',
-      'get'
-    )
+      'get',
+      HTMLElement | null
+    >(document.activeElement!, 'parentNode', 'get')
     .mockReturnValueOnce({
       closest: () => ({focus: jest.fn()}),
     } as unknown as HTMLElement);
