@@ -103,6 +103,32 @@ paths:
         '504':
           $ref: 'components.yaml#/responses/TimeoutError'
 
+    patch:
+      summary: Reconfigure cluster
+      description: Reconfigure cluster by adding or removing brokers, adding more partitions, or changing the replicationFactor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "components.yaml#/schemas/ClusterConfigPatchRequest"
+      parameters:
+        - $ref: '#/components/parameters/DryRunParameter'
+        - $ref: '#/components/parameters/ForceParameter'
+      responses:
+        '202':
+          $ref: "#/components/responses/ClusterConfigPatchResponse"
+        '400':
+          $ref: 'components.yaml#/responses/InvalidRequest'
+        '409':
+          $ref: 'components.yaml#/responses/ConcurrentChangeError'
+        '500':
+          $ref: 'components.yaml#/responses/InternalError'
+        '502':
+          $ref: 'components.yaml#/responses/GatewayError'
+        '504':
+          $ref: 'components.yaml#/responses/TimeoutError'
+
 components:
   parameters:
     BrokerId:
@@ -150,6 +176,13 @@ components:
 
     ScaleBrokersResponse:
       description: Request to reconfigure brokers is accepted.
+      content:
+        application.json:
+          schema:
+            $ref: "components.yaml#/schemas/PlannedOperationsResponse"
+
+    ClusterConfigPatchResponse:
+      description: Request to reconfigure cluster is accepted.
       content:
         application.json:
           schema:

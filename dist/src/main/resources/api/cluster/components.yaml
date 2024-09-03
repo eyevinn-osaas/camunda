@@ -52,6 +52,38 @@ schemas:
     items:
       $ref: "components.yaml#/schemas/BrokerId"
 
+  ClusterConfigPatchRequest:
+    title: ClusterConfigPatchRequest
+    description: Request body for reconfiguring the cluster
+    type: object
+    properties:
+      brokers:
+        type: object
+        properties:
+          add:
+            type: array
+            description: List of brokers to add. Can be omitted if no brokers are added.
+            items:
+              $ref: "components.yaml#/schemas/BrokerId"
+          remove:
+            type: array
+            description: List of brokers to remove. Can be omitted if no brokers are removed.
+            items:
+              $ref: "components.yaml#/schemas/BrokerId"
+      partitions:
+        type: object
+        properties:
+          count:
+            type: integer
+            format: int32
+            description: The new number of partitions. Can be omitted if the partition count is not changed.
+            example: 12
+          replicationFactor:
+            type: integer
+            format: int32
+            description: The new replication factor. Can be omitted if the replication factor is not changed.
+            example: 3
+
   PlannedOperationsResponse:
     title: PlannedOperationsResponse
     description: Returns the current topology, planned changes and the expected final topology
