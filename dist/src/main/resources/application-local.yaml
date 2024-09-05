@@ -154,3 +154,10 @@ logging:
   level:
     io:
       camunda: TRACE
+
+spring:
+  datasource:
+    url: jdbc:h2:file:./camunda;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    driverClassName: org.h2.Driver
