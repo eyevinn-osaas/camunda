@@ -20,9 +20,9 @@ import static io.camunda.zeebe.gateway.rest.validator.ProcessInstanceRequestVali
 import static io.camunda.zeebe.gateway.rest.validator.UserTaskRequestValidator.validateAssignmentRequest;
 import static io.camunda.zeebe.gateway.rest.validator.UserTaskRequestValidator.validateUpdateRequest;
 
+import io.camunda.document.api.DocumentMetadataModel;
 import io.camunda.service.AuthorizationServices.PatchAuthorizationRequest;
 import io.camunda.service.DocumentServices.DocumentCreateRequest;
-import io.camunda.service.DocumentServices.DocumentMetadataModel;
 import io.camunda.service.JobServices.ActivateJobsRequest;
 import io.camunda.service.JobServices.UpdateJobChangeset;
 import io.camunda.service.MessageServices.CorrelateMessageRequest;
@@ -319,7 +319,7 @@ public class RequestMapper {
 
     if (metadata == null) {
       return new DocumentMetadataModel(
-          file.getContentType(), file.getOriginalFilename(), null, Map.of());
+          file.getContentType(), file.getOriginalFilename(), null, file.getSize(), Map.of());
     }
     final ZonedDateTime expiresAt;
     if (metadata.getExpiresAt() == null || metadata.getExpiresAt().isBlank()) {
@@ -333,7 +333,7 @@ public class RequestMapper {
         Optional.ofNullable(metadata.getContentType()).orElse(file.getContentType());
 
     return new DocumentMetadataModel(
-        contentType, fileName, expiresAt, metadata.getAdditionalProperties());
+        contentType, fileName, expiresAt, file.getSize(), metadata.getAdditionalProperties());
   }
 
   private static DeployResourcesRequest createDeployResourceRequest(
