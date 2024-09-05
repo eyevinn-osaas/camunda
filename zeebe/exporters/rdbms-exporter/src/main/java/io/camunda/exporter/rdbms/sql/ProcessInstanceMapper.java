@@ -7,10 +7,15 @@
  */
 package io.camunda.exporter.rdbms.sql;
 
+import io.camunda.exporter.rdbms.domain.ProcessInstanceModel;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 public interface ProcessInstanceMapper {
   @Insert("INSERT INTO PROCESS_INSTANCE (id) VALUES(#{processInstanceKey})")
   void insertProcessInstance(@Param("processInstanceKey") String processInstanceKey);
+
+  @Select("SELECT id FROM PROCESS_INSTANCE WHERE id = #{processInstanceKey}")
+  ProcessInstanceModel findOne(@Param("processInstanceKey") String processInstanceKey);
 }

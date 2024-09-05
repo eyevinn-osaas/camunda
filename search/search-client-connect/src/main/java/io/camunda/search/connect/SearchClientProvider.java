@@ -34,5 +34,12 @@ public interface SearchClientProvider extends Function<ConnectConfiguration, Cam
       final var opensearch = connector.createClient();
       return new OpensearchSearchClient(opensearch);
     }
+
+    public static CamundaSearchClient createRdbmsProvider(
+        final ConnectConfiguration configuration) {
+      final var connector = new OpensearchConnector(configuration);
+      final var opensearch = connector.createClient();
+      return new OpensearchSearchClient(opensearch);
+    }
   }
 }
