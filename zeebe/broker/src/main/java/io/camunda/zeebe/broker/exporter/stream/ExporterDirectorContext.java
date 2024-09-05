@@ -7,6 +7,7 @@
  */
 package io.camunda.zeebe.broker.exporter.stream;
 
+import io.camunda.zeebe.broker.SpringBrokerBridge;
 import io.camunda.zeebe.broker.exporter.repo.ExporterDescriptor;
 import io.camunda.zeebe.broker.exporter.stream.ExporterDirector.ExporterInitializationInfo;
 import io.camunda.zeebe.broker.system.partitions.PartitionMessagingService;
@@ -33,6 +34,7 @@ public final class ExporterDirectorContext {
   private EventFilter positionsToSkipFilter;
   private MeterRegistry meterRegistry;
   private InstantSource clock;
+  private SpringBrokerBridge springBrokerBridge;
 
   public int getId() {
     return id;
@@ -76,6 +78,10 @@ public final class ExporterDirectorContext {
 
   public InstantSource getClock() {
     return clock;
+  }
+
+  public SpringBrokerBridge getSpringBrokerBridge() {
+    return springBrokerBridge;
   }
 
   public ExporterDirectorContext id(final int id) {
@@ -135,6 +141,11 @@ public final class ExporterDirectorContext {
     return this;
   }
 
+  public ExporterDirectorContext springBrokerBridge(final SpringBrokerBridge springBrokerBridge) {
+    this.springBrokerBridge = springBrokerBridge;
+    return this;
+  }
+
   public enum ExporterMode {
     /**
      * ACTIVE, means it is actively running the exporting and distributes the exporter positions to
@@ -146,5 +157,7 @@ public final class ExporterDirectorContext {
      * positions and stores them in the state. This mode is used on the follower side.
      */
     PASSIVE
-  };
+  }
+
+  ;
 }

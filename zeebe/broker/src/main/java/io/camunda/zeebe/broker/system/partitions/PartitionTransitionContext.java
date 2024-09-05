@@ -13,6 +13,7 @@ import io.camunda.zeebe.backup.api.BackupManager;
 import io.camunda.zeebe.backup.api.BackupStore;
 import io.camunda.zeebe.backup.processing.CheckpointRecordsProcessor;
 import io.camunda.zeebe.broker.PartitionListener;
+import io.camunda.zeebe.broker.SpringBrokerBridge;
 import io.camunda.zeebe.broker.exporter.repo.ExporterDescriptor;
 import io.camunda.zeebe.broker.exporter.stream.ExporterDirector;
 import io.camunda.zeebe.broker.exporter.stream.ExporterPhase;
@@ -132,4 +133,8 @@ public interface PartitionTransitionContext extends PartitionContext {
   MeterRegistry getPartitionMeterRegistry();
 
   void setPartitionMeterRegistry(MeterRegistry partitionMeterRegistry);
+
+  SpringBrokerBridge getSpringBrokerBridge();
+
+  void setSpringBrokerBridge(SpringBrokerBridge springBrokerBridge);
 }

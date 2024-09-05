@@ -17,6 +17,7 @@ import io.camunda.zeebe.scheduler.future.ActorFuture;
 import org.slf4j.Logger;
 
 final class PartitionManagerStep extends AbstractBrokerStartupStep {
+
   private static final Logger LOGGER = Loggers.SYSTEM_LOGGER;
   private static final int ERROR_CODE_ON_INCONSISTENT_TOPOLOGY = 3;
 
@@ -46,7 +47,9 @@ final class PartitionManagerStep extends AbstractBrokerStartupStep {
             brokerStartupContext.getGatewayBrokerTransport(),
             brokerStartupContext.getJobStreamService().jobStreamer(),
             brokerStartupContext.getClusterConfigurationService(),
-            brokerStartupContext.getMeterRegistry());
+            brokerStartupContext.getMeterRegistry(),
+            brokerStartupContext.getSpringBrokerBridge()
+        );
     concurrencyControl.run(
         () -> {
           try {
@@ -108,11 +111,11 @@ final class PartitionManagerStep extends AbstractBrokerStartupStep {
     final MemberId localMemberId = MemberId.from(String.valueOf(localBrokerId));
     LOGGER.warn(
         """
-          Received a newer topology which has a different state for this broker.
-          State of this broker in new topology :'{}'
-          State of this broker in old topology: '{}'
-          This usually happens when the topology was changed forcefully when this broker was unreachable or this broker encountered a data loss. Shutting down the broker. Please restart the broker to use the new topology.
-        """,
+              Received a newer topology which has a different state for this broker.
+              State of this broker in new topology :'{}'
+              State of this broker in old topology: '{}'
+              This usually happens when the topology was changed forcefully when this broker was unreachable or this broker encountered a data loss. Shutting down the broker. Please restart the broker to use the new topology.
+            """,
         newTopology.getMember(localMemberId),
         oldTopology.getMember(localMemberId));
     springBrokerBridge.initiateShutdown(ERROR_CODE_ON_INCONSISTENT_TOPOLOGY);

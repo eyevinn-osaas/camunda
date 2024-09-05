@@ -10,6 +10,7 @@ package io.camunda.zeebe.broker.partitioning.startup;
 import io.atomix.raft.partition.RaftPartition;
 import io.camunda.zeebe.broker.PartitionListener;
 import io.camunda.zeebe.broker.PartitionRaftListener;
+import io.camunda.zeebe.broker.SpringBrokerBridge;
 import io.camunda.zeebe.broker.clustering.ClusterServices;
 import io.camunda.zeebe.broker.exporter.repo.ExporterRepository;
 import io.camunda.zeebe.broker.logstreams.state.StatePositionSupplier;
@@ -103,6 +104,7 @@ public final class ZeebePartitionFactory {
   private final FeatureFlags featureFlags;
   private final List<PartitionRaftListener> partitionRaftListeners;
   private final MeterRegistry meterRegistry;
+  private final SpringBrokerBridge springBrokerBridge;
 
   public ZeebePartitionFactory(
       final ActorSchedulingService actorSchedulingService,
@@ -118,7 +120,8 @@ public final class ZeebePartitionFactory {
       final List<PartitionRaftListener> partitionRaftListeners,
       final TopologyManagerImpl topologyManager,
       final FeatureFlags featureFlags,
-      final MeterRegistry meterRegistry) {
+      final MeterRegistry meterRegistry,
+      final SpringBrokerBridge springBrokerBridge) {
     this.actorSchedulingService = actorSchedulingService;
     this.brokerCfg = brokerCfg;
     this.localBroker = localBroker;
@@ -133,6 +136,7 @@ public final class ZeebePartitionFactory {
     this.topologyManager = topologyManager;
     this.featureFlags = featureFlags;
     this.meterRegistry = meterRegistry;
+    this.springBrokerBridge = springBrokerBridge;
   }
 
   public ZeebePartition constructPartition(
@@ -167,7 +171,9 @@ public final class ZeebePartitionFactory {
             diskSpaceUsageMonitor,
             gatewayBrokerTransport,
             topologyManager,
-            meterRegistry);
+            meterRegistry,
+            springBrokerBridge
+        );
     context.setDynamicPartitionConfig(initialPartitionConfig);
 
     final PartitionTransition newTransitionBehavior = new PartitionTransitionImpl(TRANSITION_STEPS);

@@ -14,6 +14,7 @@ import io.atomix.primitive.partition.impl.DefaultPartitionManagementService;
 import io.atomix.raft.partition.RaftPartition;
 import io.camunda.zeebe.broker.PartitionListener;
 import io.camunda.zeebe.broker.PartitionRaftListener;
+import io.camunda.zeebe.broker.SpringBrokerBridge;
 import io.camunda.zeebe.broker.clustering.ClusterServices;
 import io.camunda.zeebe.broker.exporter.repo.ExporterRepository;
 import io.camunda.zeebe.broker.partitioning.startup.PartitionStartupContext;
@@ -66,6 +67,7 @@ public final class PartitionManagerImpl implements PartitionManager, PartitionCh
   private final ZeebePartitionFactory zeebePartitionFactory;
   private final RaftPartitionFactory raftPartitionFactory;
   private final ClusterConfigurationService clusterConfigurationService;
+  private final SpringBrokerBridge springBrokerBridge;
 
   public PartitionManagerImpl(
       final ConcurrencyControl concurrencyControl,
@@ -82,7 +84,8 @@ public final class PartitionManagerImpl implements PartitionManager, PartitionCh
       final AtomixServerTransport gatewayBrokerTransport,
       final JobStreamer jobStreamer,
       final ClusterConfigurationService clusterConfigurationService,
-      final MeterRegistry meterRegistry) {
+      final MeterRegistry meterRegistry,
+      final SpringBrokerBridge springBrokerBridge) {
     this.brokerCfg = brokerCfg;
     this.concurrencyControl = concurrencyControl;
     this.actorSchedulingService = actorSchedulingService;
@@ -90,6 +93,7 @@ public final class PartitionManagerImpl implements PartitionManager, PartitionCh
     this.diskSpaceUsageMonitor = diskSpaceUsageMonitor;
     final var featureFlags = brokerCfg.getExperimental().getFeatures().toFeatureFlags();
     this.clusterConfigurationService = clusterConfigurationService;
+    this.springBrokerBridge = springBrokerBridge;
     // TODO: Do this as a separate step before starting the partition manager
     topologyManager = new TopologyManagerImpl(clusterServices.getMembershipService(), localBroker);
 
@@ -111,7 +115,8 @@ public final class PartitionManagerImpl implements PartitionManager, PartitionCh
             partitionRaftListeners,
             topologyManager,
             featureFlags,
-            meterRegistry);
+            meterRegistry,
+            springBrokerBridge);
     managementService =
         new DefaultPartitionManagementService(
             clusterServices.getMembershipService(), clusterServices.getCommunicationService());
@@ -503,5 +508,9 @@ public final class PartitionManagerImpl implements PartitionManager, PartitionCh
               initializeFrom);
           result.complete(null);
         });
+  }
+
+  public SpringBrokerBridge getSpringBrokerBridge() {
+    return springBrokerBridge;
   }
 }

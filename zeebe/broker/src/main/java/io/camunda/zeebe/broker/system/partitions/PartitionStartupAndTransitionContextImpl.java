@@ -15,6 +15,7 @@ import io.camunda.zeebe.backup.api.BackupStore;
 import io.camunda.zeebe.backup.processing.CheckpointRecordsProcessor;
 import io.camunda.zeebe.broker.PartitionListener;
 import io.camunda.zeebe.broker.PartitionRaftListener;
+import io.camunda.zeebe.broker.SpringBrokerBridge;
 import io.camunda.zeebe.broker.exporter.repo.ExporterDescriptor;
 import io.camunda.zeebe.broker.exporter.repo.ExporterRepository;
 import io.camunda.zeebe.broker.exporter.stream.ExporterDirector;
@@ -107,6 +108,7 @@ public class PartitionStartupAndTransitionContextImpl
   private final MeterRegistry brokerMeterRegistry;
   private MeterRegistry partitionMeterRegistry;
   private ControllableStreamClock clock;
+  private SpringBrokerBridge springBrokerBridge;
 
   public PartitionStartupAndTransitionContextImpl(
       final int nodeId,
@@ -127,7 +129,8 @@ public class PartitionStartupAndTransitionContextImpl
       final DiskSpaceUsageMonitor diskSpaceUsageMonitor,
       final AtomixServerTransport gatewayBrokerTransport,
       final TopologyManager topologyManager,
-      final MeterRegistry brokerMeterRegistry) {
+      final MeterRegistry brokerMeterRegistry,
+      final SpringBrokerBridge springBrokerBridge) {
     this.nodeId = nodeId;
     this.partitionCount = partitionCount;
     this.clusterCommunicationService = clusterCommunicationService;
@@ -150,6 +153,7 @@ public class PartitionStartupAndTransitionContextImpl
     this.topologyManager = topologyManager;
     this.brokerMeterRegistry = new CompositeMeterRegistry().add(brokerMeterRegistry);
     this.brokerMeterRegistry.config().commonTags(Tags.of("partition", String.valueOf(partitionId)));
+    this.springBrokerBridge = springBrokerBridge;
   }
 
   public PartitionAdminControl getPartitionAdminControl() {
@@ -373,6 +377,16 @@ public class PartitionStartupAndTransitionContextImpl
   @Override
   public void setPartitionMeterRegistry(final MeterRegistry partitionMeterRegistry) {
     this.partitionMeterRegistry = partitionMeterRegistry;
+  }
+
+  @Override
+  public SpringBrokerBridge getSpringBrokerBridge() {
+    return springBrokerBridge;
+  }
+
+  @Override
+  public void setSpringBrokerBridge(final SpringBrokerBridge springBrokerBridge) {
+    this.springBrokerBridge = springBrokerBridge;
   }
 
   @Override
