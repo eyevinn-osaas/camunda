@@ -191,6 +191,8 @@
 
     <version.javassist>3.30.2-GA</version.javassist>
 
+    <version.mybatis>3.0.4</version.mybatis>
+
     <!--    VERIFY WHETHER OPERATE WORKS WITH MOCKITO 5.11 -->
     <!--    <mockito.version>5.5.0</mockito.version>-->
 
@@ -1074,6 +1076,12 @@
         <version>${project.version}</version>
         <classifier>tests</classifier>
         <type>test-jar</type>
+      </dependency>
+
+      <dependency>
+        <groupId>org.mybatis</groupId>
+        <artifactId>mybatis-spring</artifactId>
+        <version>${version.mybatis}</version>
       </dependency>
 
       <dependency>

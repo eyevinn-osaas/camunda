@@ -7,10 +7,17 @@
  */
 package io.camunda.exporter.rdbms;
 
+import io.camunda.exporter.rdbms.sql.MapperHolder;
+import io.camunda.exporter.rdbms.sql.ProcessInstanceMapper;
 import io.camunda.zeebe.exporter.api.Exporter;
 import io.camunda.zeebe.exporter.api.context.Context;
 import io.camunda.zeebe.exporter.api.context.Controller;
 import io.camunda.zeebe.protocol.record.Record;
+import io.camunda.zeebe.protocol.record.RecordValue;
+import io.camunda.zeebe.protocol.record.ValueType;
+import io.camunda.zeebe.protocol.record.intent.ProcessInstanceIntent;
+import io.camunda.zeebe.protocol.record.value.BpmnElementType;
+import io.camunda.zeebe.protocol.record.value.ProcessInstanceRecordValue;
 import java.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +28,7 @@ public class RdbmsExporter implements Exporter {
 
   private Controller controller;
   private long lastPosition = -1;
+  private ProcessInstanceMapper processInstanceMapper;
 
   @Override
   public void configure(final Context context) {
@@ -51,6 +59,16 @@ public class RdbmsExporter implements Exporter {
   @Override
   public void export(final Record<?> record) {
     LOG.debug("EXPORT IT!");
+
+    if (record.getValueType() == ValueType.PROCESS_INSTANCE
+        && ((ProcessInstanceRecordValue) record.getValue()).getBpmnElementType() == BpmnElementType.PROCESS
+        && record.getIntent() == ProcessInstanceIntent.ELEMENT_ACTIVATED) {
+      ProcessInstanceRecordValue value = (ProcessInstanceRecordValue) record.getValue();
+
+      MapperHolder.PROCESS_INSTANCE_MAPPER.insertProcessInstance(
+          Long.toString(value.getProcessInstanceKey()));
+    }
+
     lastPosition = record.getPosition();
     if (shouldFlush()) {
       flush();

@@ -56,3 +56,5 @@ els-snapshots
 
 optimize/client/.node/
 .yarn
+/camunda.mv.db
+/camunda.trace.db
