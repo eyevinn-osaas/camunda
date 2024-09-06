@@ -8,7 +8,6 @@
 package io.camunda.exporter.rdbms;
 
 import io.camunda.db.rdbms.RdbmsService;
-import io.camunda.db.rdbms.domain.ProcessInstanceModel;
 import io.camunda.zeebe.broker.SpringBrokerBridge;
 import io.camunda.zeebe.broker.exporter.context.ExporterContext;
 import io.camunda.zeebe.exporter.api.Exporter;
@@ -16,8 +15,6 @@ import io.camunda.zeebe.exporter.api.context.Context;
 import io.camunda.zeebe.exporter.api.context.Controller;
 import io.camunda.zeebe.protocol.record.Record;
 import io.camunda.zeebe.protocol.record.ValueType;
-import io.camunda.zeebe.protocol.record.intent.ProcessInstanceCreationIntent;
-import io.camunda.zeebe.protocol.record.value.ProcessInstanceCreationRecordValue;
 import java.util.HashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,21 +80,6 @@ public class RdbmsExporter implements Exporter {
       LOG.debug("[RDBMS Exporter] No registered handler found for {}", record.getValueType());
     }
 
-    if (record.getValueType() == ValueType.PROCESS_INSTANCE_CREATION
-        && record.getIntent() == ProcessInstanceCreationIntent.CREATED) {
-      final ProcessInstanceCreationRecordValue value = (ProcessInstanceCreationRecordValue) record.getValue();
-
-      LOG.debug("[RDBMS Exporter] Export Process Created event: {}", value.getBpmnProcessId());
-      rdbmsService.processRdbmsService().save(
-          new ProcessInstanceModel(
-              value.getProcessInstanceKey(),
-              value.getBpmnProcessId(),
-              value.getProcessDefinitionKey(),
-              value.getTenantId()
-          )
-      );
-    }
-
     lastPosition = record.getPosition();
     updateLastExportedPosition();
   }
@@ -107,8 +89,8 @@ public class RdbmsExporter implements Exporter {
   }
 
   private void registerHandler() {
-    registeredHandlers.put(ValueType.VARIABLE,
-        new VariableExportHandler(rdbmsService.getVariableRdbmsService()));
+    registeredHandlers.put(ValueType.PROCESS_INSTANCE_CREATION, new ProcessExportHandler(rdbmsService.getProcessRdbmsService()));
+    registeredHandlers.put(ValueType.VARIABLE, new VariableExportHandler(rdbmsService.getVariableRdbmsService()));
   }
 
 }

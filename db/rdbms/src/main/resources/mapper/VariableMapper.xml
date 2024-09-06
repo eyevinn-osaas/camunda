@@ -8,6 +8,14 @@
   -->
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="io.camunda.db.rdbms.sql.VariableMapper">
+  <select id="exists" parameterType="java.lang.Long" resultType="boolean">
+    SELECT EXISTS(
+      SELECT 1
+      FROM VARIABLE
+      WHERE VAR_KEY = #{key}
+    )
+  </select>
+
   <select id="findOne" parameterType="java.lang.Long" resultType="io.camunda.db.rdbms.domain.VariableModel">
     SELECT
       VAR_KEY,

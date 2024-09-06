@@ -16,6 +16,8 @@ public interface VariableMapper {
 
   VariableModel findOne(Long key);
 
+  boolean exists(Long key);
+
   List<VariableModel> find(VariableFilter filter);
 
   record VariableFilter(

@@ -21,7 +21,15 @@ public class VariableRdbmsService {
   }
 
   public void save(final VariableModel variable) {
-    variableMapper.insert(variable);
+    if (!exists(variable.key())) {
+      variableMapper.insert(variable);
+    } else {
+      // TODO Update
+    }
+  }
+
+  public boolean exists(final Long key) {
+    return variableMapper.exists(key);
   }
 
   public VariableModel findOne(final Long key) {

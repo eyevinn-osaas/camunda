@@ -26,7 +26,7 @@ public class RdbmsService {
     this.variableRdbmsService = variableRdbmsService;
   }
 
-  public ProcessRdbmsService processRdbmsService() {
+  public ProcessRdbmsService getProcessRdbmsService() {
     return processRdbmsService;
   }
 
