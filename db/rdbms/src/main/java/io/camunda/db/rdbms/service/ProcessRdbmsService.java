@@ -8,18 +8,29 @@
 package io.camunda.db.rdbms.service;
 
 import io.camunda.db.rdbms.domain.ProcessInstanceModel;
+import io.camunda.db.rdbms.queue.ContextType;
+import io.camunda.db.rdbms.queue.ExecutionQueue;
+import io.camunda.db.rdbms.queue.QueueItem;
 import io.camunda.db.rdbms.sql.ProcessInstanceMapper;
 
 public class ProcessRdbmsService {
 
+  private final ExecutionQueue executionQueue;
   private final ProcessInstanceMapper processInstanceMapper;
 
-  public ProcessRdbmsService(final ProcessInstanceMapper processInstanceMapper) {
+  public ProcessRdbmsService(final ExecutionQueue executionQueue, final ProcessInstanceMapper processInstanceMapper) {
+    this.executionQueue = executionQueue;
     this.processInstanceMapper = processInstanceMapper;
   }
 
-  public void save(final ProcessInstanceModel processInstance) {
-    processInstanceMapper.insert(processInstance);
+  public void save(final ProcessInstanceModel processInstance, final long eventPosition) {
+    executionQueue.executeInQueue(new QueueItem(
+        ContextType.PROCESS_INSTANCE,
+        processInstance.processInstanceKey(),
+        "io.camunda.db.rdbms.sql.ProcessInstanceMapper.insert",
+        processInstance,
+        eventPosition
+    ));
   }
 
   public ProcessInstanceModel findOne(final Long processInstanceKey) {

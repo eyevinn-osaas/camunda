@@ -7,6 +7,7 @@
  */
 package io.camunda.db.rdbms;
 
+import io.camunda.db.rdbms.queue.ExecutionQueue;
 import io.camunda.db.rdbms.service.ProcessRdbmsService;
 import io.camunda.db.rdbms.service.VariableRdbmsService;
 import io.camunda.db.rdbms.sql.ProcessInstanceMapper;
@@ -60,9 +61,8 @@ public class RdbmsConfiguration {
   }
 
   @Bean
-  public ProcessRdbmsService processRdbmsService(
-      final ProcessInstanceMapper processInstanceMapper) {
-    return new ProcessRdbmsService(processInstanceMapper);
+  public ExecutionQueue executionQueue(final SqlSessionFactory sqlSessionFactory) {
+    return new ExecutionQueue(sqlSessionFactory);
   }
 
   @Bean
@@ -72,14 +72,17 @@ public class RdbmsConfiguration {
   }
 
   @Bean
-  public RdbmsService rdbmsService(
-      final ProcessRdbmsService processRdbmsService,
-      final VariableRdbmsService variableRdbmsService
-  ) {
-    return new RdbmsService(
-        processRdbmsService,
-        variableRdbmsService
-    );
+  public ProcessRdbmsService processRdbmsService(
+      final ExecutionQueue executionQueue,
+      final ProcessInstanceMapper processInstanceMapper) {
+    return new ProcessRdbmsService(executionQueue, processInstanceMapper);
+  }
+
+  @Bean
+  public RdbmsService rdbmsService(final ExecutionQueue executionQueue,
+      final VariableRdbmsService variableRdbmsService,
+      final ProcessRdbmsService processRdbmsService) {
+    return new RdbmsService(executionQueue, processRdbmsService, variableRdbmsService);
   }
 
 }

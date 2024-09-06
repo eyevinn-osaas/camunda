@@ -22,13 +22,11 @@
   <insert
     id="insert"
     parameterType="io.camunda.db.rdbms.domain.ProcessInstanceModel"
-    flushCache="true"
-    timeout="20">
+    flushCache="true">
     MERGE INTO PROCESS_INSTANCE pi
-      USING (SELECT *
-             FROM PROCESS_INSTANCE
-             WHERE PROCESS_INSTANCE_KEY = #{processInstanceKey}) t
-    ON t.PROCESS_INSTANCE_KEY = pi.PROCESS_INSTANCE_KEY
+      USING (SELECT CAST(#{processInstanceKey} AS LONG) ID
+             FROM dual) t
+    ON t.ID = pi.PROCESS_INSTANCE_KEY
     WHEN NOT MATCHED THEN
       INSERT (PROCESS_INSTANCE_KEY, BPMN_PROCESS_ID, PROCESS_DEFINITION_KEY, TENANT_ID)
       VALUES (#{processInstanceKey}, #{bpmnProcessId}, #{processDefinitionKey}, #{tenantId})

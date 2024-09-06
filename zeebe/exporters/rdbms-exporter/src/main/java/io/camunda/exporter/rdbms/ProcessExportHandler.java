@@ -29,7 +29,7 @@ public class ProcessExportHandler implements RdbmsExportHandler<ProcessInstanceC
   @Override
   public void export(final Record<ProcessInstanceCreationRecord> record) {
     final ProcessInstanceCreationRecord value = record.getValue();
-    processRdbmsService.save(map(value));
+    processRdbmsService.save(map(value), record.getPosition());
   }
 
   private ProcessInstanceModel map(final ProcessInstanceCreationRecord value) {

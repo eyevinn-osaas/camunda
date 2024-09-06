@@ -15,6 +15,7 @@ import io.camunda.zeebe.exporter.api.context.Context;
 import io.camunda.zeebe.exporter.api.context.Controller;
 import io.camunda.zeebe.protocol.record.Record;
 import io.camunda.zeebe.protocol.record.ValueType;
+import java.time.Duration;
 import java.util.HashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +25,6 @@ public class RdbmsExporter implements Exporter {
   private static final Logger LOG = LoggerFactory.getLogger(RdbmsExporter.class);
 
   private Controller controller;
-  private long lastPosition = -1;
 
   private RdbmsService rdbmsService;
 
@@ -47,12 +47,18 @@ public class RdbmsExporter implements Exporter {
     this.controller = controller;
 
     LOG.info("[RDBMS Exporter] Exporter opened");
+    this.rdbmsService.executionQueue().registerExecutionListener(
+        controller::updateLastExportedRecordPosition);
+
+    this.controller.scheduleCancellableTask(Duration.ofSeconds(5), this::flushAndReschedule);
+
+    LOG.info("Exporter opened");
   }
 
   @Override
   public void close() {
     try {
-      updateLastExportedPosition();
+      rdbmsService.executionQueue().flush();
     } catch (final Exception e) {
       LOG.warn("[RDBMS Exporter] Failed to flush records before closing exporter.", e);
     }
@@ -79,13 +85,11 @@ public class RdbmsExporter implements Exporter {
     } else {
       LOG.debug("[RDBMS Exporter] No registered handler found for {}", record.getValueType());
     }
-
-    lastPosition = record.getPosition();
-    updateLastExportedPosition();
   }
 
-  private void updateLastExportedPosition() {
-    controller.updateLastExportedRecordPosition(lastPosition);
+  public void flushAndReschedule() {
+    this.rdbmsService.executionQueue().flush();
+    this.controller.scheduleCancellableTask(Duration.ofSeconds(5), this::flushAndReschedule);
   }
 
   private void registerHandler() {
