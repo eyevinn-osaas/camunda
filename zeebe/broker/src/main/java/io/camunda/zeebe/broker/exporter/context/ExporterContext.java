@@ -15,6 +15,7 @@ import io.camunda.zeebe.protocol.record.ValueType;
 import io.camunda.zeebe.util.EnsureUtil;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.time.InstantSource;
+import java.util.Optional;
 import org.slf4j.Logger;
 
 public final class ExporterContext implements Context {
@@ -26,7 +27,7 @@ public final class ExporterContext implements Context {
   private final int partitionId;
   private final MeterRegistry meterRegistry;
   private final InstantSource clock;
-  private final SpringBrokerBridge springBrokerBridge;
+  private final Optional<SpringBrokerBridge> springBrokerBridge;
 
   private RecordFilter filter = DEFAULT_FILTER;
 
@@ -42,7 +43,7 @@ public final class ExporterContext implements Context {
     this.partitionId = partitionId;
     this.meterRegistry = meterRegistry;
     this.clock = clock;
-    this.springBrokerBridge = springBrokerBridge;
+    this.springBrokerBridge = Optional.ofNullable(springBrokerBridge);
   }
 
   @Override
@@ -78,6 +79,10 @@ public final class ExporterContext implements Context {
   public void setFilter(final RecordFilter filter) {
     EnsureUtil.ensureNotNull("filter", filter);
     this.filter = filter;
+  }
+
+  public Optional<SpringBrokerBridge> getSpringBrokerBridge() {
+    return springBrokerBridge;
   }
 
   private static final class AcceptAllRecordsFilter implements RecordFilter {

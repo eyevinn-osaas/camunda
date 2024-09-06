@@ -9,6 +9,8 @@ package io.camunda.exporter.rdbms;
 
 import io.camunda.db.rdbms.RdbmsService;
 import io.camunda.db.rdbms.domain.ProcessInstanceModel;
+import io.camunda.zeebe.broker.SpringBrokerBridge;
+import io.camunda.zeebe.broker.exporter.context.ExporterContext;
 import io.camunda.zeebe.exporter.api.Exporter;
 import io.camunda.zeebe.exporter.api.context.Context;
 import io.camunda.zeebe.exporter.api.context.Controller;
@@ -32,6 +34,9 @@ public class RdbmsExporter implements Exporter {
 
   @Override
   public void configure(final Context context) {
+    ((ExporterContext) context).getSpringBrokerBridge()
+        .flatMap(SpringBrokerBridge::getRdbmsService)
+        .ifPresent(service -> rdbmsService = service);
     LOG.info("RDBMS Exporter configured!");
   }
 
