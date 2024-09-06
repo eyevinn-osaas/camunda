@@ -72,7 +72,7 @@ public final class EmbeddedBrokerRule extends ExternalResource {
   protected BrokerCfg brokerCfg;
   protected Broker broker;
   protected final ControlledActorClock controlledActorClock = new ControlledActorClock();
-  protected final SpringBrokerBridge springBrokerBridge = new SpringBrokerBridge();
+  protected final SpringBrokerBridge springBrokerBridge = new SpringBrokerBridge(null);
 
   protected long startTime;
   private AtomixCluster atomixCluster;

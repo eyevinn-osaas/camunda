@@ -382,7 +382,7 @@ public class ClusteringRule extends ExternalResource {
   }
 
   private SpringBrokerBridge getSpringBrokerBridge(final int nodeId) {
-    return springBrokerBridge.computeIfAbsent(nodeId, n -> new SpringBrokerBridge());
+    return springBrokerBridge.computeIfAbsent(nodeId, n -> new SpringBrokerBridge(null));
   }
 
   public boolean isBrokerHealthy(final int nodeId) {

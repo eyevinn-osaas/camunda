@@ -219,6 +219,6 @@ final class PartitionLeaveTest {
     final var systemContext =
         new SystemContext(brokerCfg, actorScheduler, atomixCluster, brokerClient);
 
-    return new Broker(systemContext, new SpringBrokerBridge(), List.of());
+    return new Broker(systemContext, new SpringBrokerBridge(null), List.of());
   }
 }
