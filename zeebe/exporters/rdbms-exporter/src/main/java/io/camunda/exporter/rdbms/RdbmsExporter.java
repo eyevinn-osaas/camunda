@@ -46,15 +46,12 @@ public class RdbmsExporter implements Exporter {
   public void open(final Controller controller) {
     this.controller = controller;
 
-    scheduleDelayedFlush();
-
     LOG.info("Exporter opened");
   }
 
   @Override
   public void close() {
     try {
-      flush();
       updateLastExportedPosition();
     } catch (final Exception e) {
       LOG.warn("Failed to flush records before closing exporter.", e);
@@ -65,7 +62,7 @@ public class RdbmsExporter implements Exporter {
 
   @Override
   public void export(final Record<?> record) {
-    LOG.debug("EXPORT IT!");
+    LOG.debug("Exporting record {}-{} - {}:{}", record.getPartitionId(), record.getPosition(), record.getValueType(), record.getIntent());
 
     if (record.getValueType() == ValueType.PROCESS_INSTANCE_CREATION
         && record.getIntent() == ProcessInstanceCreationIntent.CREATED) {
@@ -88,24 +85,6 @@ public class RdbmsExporter implements Exporter {
     }
 
     updateLastExportedPosition();
-  }
-
-  private void scheduleDelayedFlush() {
-    controller.scheduleCancellableTask(Duration.ofSeconds(5), this::flushAndReschedule);
-  }
-
-  private void flushAndReschedule() {
-    try {
-      flush();
-      updateLastExportedPosition();
-    } catch (final Exception e) {
-      LOG.warn("Unexpected exception occurred on periodically flushing bulk, will retry later.", e);
-    }
-    scheduleDelayedFlush();
-  }
-
-  private void flush() {
-    LOG.debug("FLUSH IT!");
   }
 
   private void updateLastExportedPosition() {
