@@ -5,7 +5,7 @@
  * Licensed under the Camunda License 1.0. You may not use this file
  * except in compliance with the Camunda License 1.0.
  */
-package io.camunda.exporter.rdbms.sql;
+package io.camunda.db.rdbms.sql;
 
 import io.camunda.exporter.rdbms.domain.ProcessInstanceModel;
 import org.apache.ibatis.annotations.Insert;

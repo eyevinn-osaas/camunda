@@ -7,8 +7,8 @@
  */
 package io.camunda.exporter.rdbms;
 
-import io.camunda.exporter.rdbms.sql.MapperHolder;
-import io.camunda.exporter.rdbms.sql.ProcessInstanceMapper;
+import io.camunda.db.rdbms.sql.MapperHolder;
+import io.camunda.db.rdbms.sql.ProcessInstanceMapper;
 import io.camunda.zeebe.exporter.api.Exporter;
 import io.camunda.zeebe.exporter.api.context.Context;
 import io.camunda.zeebe.exporter.api.context.Controller;

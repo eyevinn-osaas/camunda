@@ -5,8 +5,9 @@
  * Licensed under the Camunda License 1.0. You may not use this file
  * except in compliance with the Camunda License 1.0.
  */
-package io.camunda.exporter.rdbms.domain;
+package io.camunda.db.rdbms.sql;
 
-public record ProcessInstanceModel(
-    String processInstanceKey
-) {}
+public class MapperHolder {
+  public static ProcessInstanceMapper PROCESS_INSTANCE_MAPPER;
+
+}

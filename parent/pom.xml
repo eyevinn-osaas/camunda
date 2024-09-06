@@ -813,6 +813,19 @@
         <scope>test</scope>
       </dependency>
 
+      <!-- camunda secondary db -->
+      <dependency>
+        <groupId>io.camunda</groupId>
+        <artifactId>camunda-db</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.camunda</groupId>
+        <artifactId>camunda-db-rdbms</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
       <!-- camunda search client -->
 
       <dependency>
