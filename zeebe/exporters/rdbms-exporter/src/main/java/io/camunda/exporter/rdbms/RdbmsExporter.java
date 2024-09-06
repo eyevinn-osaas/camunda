@@ -16,8 +16,10 @@ import io.camunda.zeebe.exporter.api.context.Context;
 import io.camunda.zeebe.exporter.api.context.Controller;
 import io.camunda.zeebe.protocol.record.Record;
 import io.camunda.zeebe.protocol.record.ValueType;
+import io.camunda.zeebe.protocol.record.intent.ProcessInstanceCreationIntent;
 import io.camunda.zeebe.protocol.record.intent.ProcessInstanceIntent;
 import io.camunda.zeebe.protocol.record.value.BpmnElementType;
+import io.camunda.zeebe.protocol.record.value.ProcessInstanceCreationRecordValue;
 import io.camunda.zeebe.protocol.record.value.ProcessInstanceRecordValue;
 import java.time.Duration;
 import org.slf4j.Logger;
@@ -65,32 +67,27 @@ public class RdbmsExporter implements Exporter {
   public void export(final Record<?> record) {
     LOG.debug("EXPORT IT!");
 
-    if (record.getValueType() == ValueType.PROCESS_INSTANCE
-        && ((ProcessInstanceRecordValue) record.getValue()).getBpmnElementType()
-        == BpmnElementType.PROCESS
-        && record.getIntent() == ProcessInstanceIntent.ELEMENT_ACTIVATED) {
-      final ProcessInstanceRecordValue value = (ProcessInstanceRecordValue) record.getValue();
+    if (record.getValueType() == ValueType.PROCESS_INSTANCE_CREATION
+        && record.getIntent() == ProcessInstanceCreationIntent.CREATED) {
+      final ProcessInstanceCreationRecordValue value = (ProcessInstanceCreationRecordValue) record.getValue();
 
-      rdbmsService.processRdbmsService().save(
-          new ProcessInstanceModel(
-              Long.toString(value.getProcessInstanceKey())
-          )
-      );
+      var existingInstance = rdbmsService.processRdbmsService()
+          .findOne(value.getProcessInstanceKey());
+      // TODO solve problem with duplicate replay (position not saved?)
+      if (existingInstance == null) {
+        rdbmsService.processRdbmsService().save(
+            new ProcessInstanceModel(
+                value.getProcessInstanceKey(),
+                value.getBpmnProcessId(),
+                value.getProcessDefinitionKey(),
+                value.getTenantId()
+            )
+        );
+      }
+      lastPosition = record.getPosition();
     }
 
-    lastPosition = record.getPosition();
-    if (shouldFlush()) {
-      flush();
-      // Update the record counters only after the flush was successful. If the synchronous flush
-      // fails then the exporter will be invoked with the same record again.
-      updateLastExportedPosition();
-    }
-  }
-
-
-  private boolean shouldFlush() {
-    // FIXME should compare against both batch size and memory limit
-    return true;
+    updateLastExportedPosition();
   }
 
   private void scheduleDelayedFlush() {

@@ -8,5 +8,10 @@
 package io.camunda.db.rdbms.domain;
 
 public record ProcessInstanceModel(
-    String processInstanceKey
-) {}
+    Long processInstanceKey,
+    String bpmnProcessId,
+    Long processDefinitionKey,
+    String tenantId
+
+) {
+}

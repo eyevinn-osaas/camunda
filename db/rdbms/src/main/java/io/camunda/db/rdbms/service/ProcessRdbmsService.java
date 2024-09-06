@@ -19,10 +19,10 @@ public class ProcessRdbmsService {
   }
 
   public void save(final ProcessInstanceModel processInstance) {
-    processInstanceMapper.insertProcessInstance(processInstance.processInstanceKey());
+    processInstanceMapper.insert(processInstance);
   }
 
-  public ProcessInstanceModel findOne(final String processInstanceKey) {
+  public ProcessInstanceModel findOne(final Long processInstanceKey) {
     return processInstanceMapper.findOne(processInstanceKey);
   }
 

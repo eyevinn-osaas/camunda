@@ -150,7 +150,10 @@ logging:
 
 spring:
   datasource:
-    url: jdbc:h2:file:./camunda;DB_CLOSE_ON_EXIT=FALSE
+    url: jdbc:h2:file:./camunda;AUTO_SERVER=TRUE
     username: sa
     password:
     driverClassName: org.h2.Driver
+
+mybatis:
+  mapper-locations: classpath:mapper/**/*-mapper.xml

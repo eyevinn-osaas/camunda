@@ -16,6 +16,7 @@ import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.mapper.MapperFactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 @Configuration
 public class RdbmsConfiguration {
@@ -33,6 +34,7 @@ public class RdbmsConfiguration {
   public SqlSessionFactory sqlSessionFactory(final DataSource dataSource) throws Exception {
     final SqlSessionFactoryBean factoryBean = new SqlSessionFactoryBean();
     factoryBean.setDataSource(dataSource);
+    factoryBean.addMapperLocations(new PathMatchingResourcePatternResolver().getResources("classpath*:mapper/*.xml"));
     return factoryBean.getObject();
   }
 
