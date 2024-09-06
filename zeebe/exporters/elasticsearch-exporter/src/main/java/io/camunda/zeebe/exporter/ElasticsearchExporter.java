@@ -30,6 +30,8 @@ import org.slf4j.LoggerFactory;
 
 public class ElasticsearchExporter implements Exporter {
 
+  private static final Logger LOG = LoggerFactory.getLogger(ElasticsearchExporter.class);
+
   /**
    * Supported pattern for min_age property of ILM, we only support: days, hours, minutes and
    * seconds. Everything below seconds we don't expect as useful.
@@ -127,6 +129,8 @@ public class ElasticsearchExporter implements Exporter {
     final var recordSequence = recordCounters.getNextRecordSequence(record);
     client.index(record, recordSequence);
     lastPosition = record.getPosition();
+
+    LOG.debug("[ES Exporter]: Export {}", record);
 
     if (client.shouldFlush()) {
       flush();

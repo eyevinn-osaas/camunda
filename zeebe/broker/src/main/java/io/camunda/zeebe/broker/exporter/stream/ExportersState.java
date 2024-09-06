@@ -17,11 +17,13 @@ import java.util.function.BiConsumer;
 import org.agrona.DirectBuffer;
 import org.agrona.collections.LongArrayList;
 import org.agrona.concurrent.UnsafeBuffer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class ExportersState {
 
   public static final long VALUE_NOT_FOUND = -1;
-
+  private static final Logger LOG = LoggerFactory.getLogger(ExportersState.class);
   private static final UnsafeBuffer METADATA_NOT_FOUND = new UnsafeBuffer();
 
   private final DbString exporterId;
@@ -45,10 +47,13 @@ public final class ExportersState {
 
     final var exporterStateEntry =
         findExporterStateEntry(exporterId).orElse(new ExporterStateEntry());
+    LOG.debug("Loaded position: {}", exporterStateEntry);
     exporterStateEntry.setPosition(position);
     if (metadata != null) {
       exporterStateEntry.setMetadata(metadata);
     }
+
+    LOG.debug("Update postion for '{}' to '{}': {}", exporterId, position, exporterStateEntry);
     exporterPositionColumnFamily.upsert(this.exporterId, exporterStateEntry);
   }
 

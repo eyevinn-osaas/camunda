@@ -17,10 +17,7 @@ import io.camunda.zeebe.exporter.api.context.Controller;
 import io.camunda.zeebe.protocol.record.Record;
 import io.camunda.zeebe.protocol.record.ValueType;
 import io.camunda.zeebe.protocol.record.intent.ProcessInstanceCreationIntent;
-import io.camunda.zeebe.protocol.record.intent.ProcessInstanceIntent;
-import io.camunda.zeebe.protocol.record.value.BpmnElementType;
 import io.camunda.zeebe.protocol.record.value.ProcessInstanceCreationRecordValue;
-import io.camunda.zeebe.protocol.record.value.ProcessInstanceRecordValue;
 import java.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,11 +61,15 @@ public class RdbmsExporter implements Exporter {
   public void export(final Record<?> record) {
     LOG.debug("Exporting record {}-{} - {}:{}", record.getPartitionId(), record.getPosition(), record.getValueType(), record.getIntent());
 
+    lastPosition = record.getPosition();
+
     if (record.getValueType() == ValueType.PROCESS_INSTANCE_CREATION
         && record.getIntent() == ProcessInstanceCreationIntent.CREATED) {
       final ProcessInstanceCreationRecordValue value = (ProcessInstanceCreationRecordValue) record.getValue();
 
-      var existingInstance = rdbmsService.processRdbmsService()
+      LOG.debug("Export Process Created event: {}", value.getBpmnProcessId());
+
+      final var existingInstance = rdbmsService.processRdbmsService()
           .findOne(value.getProcessInstanceKey());
       // TODO solve problem with duplicate replay (position not saved?)
       if (existingInstance == null) {
@@ -81,10 +82,7 @@ public class RdbmsExporter implements Exporter {
             )
         );
       }
-      lastPosition = record.getPosition();
     }
-
-    updateLastExportedPosition();
   }
 
   private void updateLastExportedPosition() {
