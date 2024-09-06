@@ -57,7 +57,7 @@ zeebe:
       logSegmentSize: 128MB
       # How often we take snapshots of streams (time unit)
       # This setting can also be overridden using the environment variable ZEEBE_BROKER_DATA_SNAPSHOTPERIOD.
-      snapshotPeriod: 15m
+      snapshotPeriod: 1m
 
     cluster:
       # Specifies the Zeebe cluster size.

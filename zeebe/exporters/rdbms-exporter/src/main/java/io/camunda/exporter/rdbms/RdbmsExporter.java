@@ -59,30 +59,26 @@ public class RdbmsExporter implements Exporter {
 
   @Override
   public void export(final Record<?> record) {
-    LOG.debug("Exporting record {}-{} - {}:{}", record.getPartitionId(), record.getPosition(), record.getValueType(), record.getIntent());
-
-    lastPosition = record.getPosition();
+    LOG.debug("Exporting record {}-{} - {}:{}", record.getPartitionId(), record.getPosition(),
+        record.getValueType(), record.getIntent());
 
     if (record.getValueType() == ValueType.PROCESS_INSTANCE_CREATION
         && record.getIntent() == ProcessInstanceCreationIntent.CREATED) {
       final ProcessInstanceCreationRecordValue value = (ProcessInstanceCreationRecordValue) record.getValue();
 
       LOG.debug("Export Process Created event: {}", value.getBpmnProcessId());
-
-      final var existingInstance = rdbmsService.processRdbmsService()
-          .findOne(value.getProcessInstanceKey());
-      // TODO solve problem with duplicate replay (position not saved?)
-      if (existingInstance == null) {
-        rdbmsService.processRdbmsService().save(
-            new ProcessInstanceModel(
-                value.getProcessInstanceKey(),
-                value.getBpmnProcessId(),
-                value.getProcessDefinitionKey(),
-                value.getTenantId()
-            )
-        );
-      }
+      rdbmsService.processRdbmsService().save(
+          new ProcessInstanceModel(
+              value.getProcessInstanceKey(),
+              value.getBpmnProcessId(),
+              value.getProcessDefinitionKey(),
+              value.getTenantId()
+          )
+      );
     }
+
+    lastPosition = record.getPosition();
+    updateLastExportedPosition();
   }
 
   private void updateLastExportedPosition() {
