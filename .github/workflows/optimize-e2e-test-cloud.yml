@@ -61,7 +61,7 @@ jobs:
       env:
         ELASTIC_VERSION: ${{ steps.pom-info.outputs.x_elasticsearch_test_version }}
         ELASTIC_JVM_MEMORY: 1
-        ELASTIC_HTTP_PORT: ${{ steps.pom-info.outputs.x_new_elasticsearch_port }}
+        ELASTIC_HTTP_PORT: ${{ steps.pom-info.outputs.x_new_database_port }}
     - name: Setup NodeJS
       uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4
       with:
