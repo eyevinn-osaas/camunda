@@ -47,13 +47,11 @@ public final class ExportersState {
 
     final var exporterStateEntry =
         findExporterStateEntry(exporterId).orElse(new ExporterStateEntry());
-    LOG.debug("Loaded position: {}", exporterStateEntry);
     exporterStateEntry.setPosition(position);
     if (metadata != null) {
       exporterStateEntry.setMetadata(metadata);
     }
 
-    LOG.debug("Update postion for '{}' to '{}': {}", exporterId, position, exporterStateEntry);
     exporterPositionColumnFamily.upsert(this.exporterId, exporterStateEntry);
   }
 

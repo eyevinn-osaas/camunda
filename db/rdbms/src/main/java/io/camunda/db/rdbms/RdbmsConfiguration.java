@@ -8,7 +8,9 @@
 package io.camunda.db.rdbms;
 
 import io.camunda.db.rdbms.service.ProcessRdbmsService;
+import io.camunda.db.rdbms.service.VariableRdbmsService;
 import io.camunda.db.rdbms.sql.ProcessInstanceMapper;
+import io.camunda.db.rdbms.sql.VariableMapper;
 import javax.sql.DataSource;
 import liquibase.integration.spring.MultiTenantSpringLiquibase;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -34,7 +36,8 @@ public class RdbmsConfiguration {
   public SqlSessionFactory sqlSessionFactory(final DataSource dataSource) throws Exception {
     final SqlSessionFactoryBean factoryBean = new SqlSessionFactoryBean();
     factoryBean.setDataSource(dataSource);
-    factoryBean.addMapperLocations(new PathMatchingResourcePatternResolver().getResources("classpath*:mapper/*.xml"));
+    factoryBean.addMapperLocations(
+        new PathMatchingResourcePatternResolver().getResources("classpath*:mapper/*.xml"));
     return factoryBean.getObject();
   }
 
@@ -48,15 +51,34 @@ public class RdbmsConfiguration {
   }
 
   @Bean
+  public MapperFactoryBean<VariableMapper> variableMapper(
+      final SqlSessionFactory sqlSessionFactory) throws Exception {
+    final MapperFactoryBean<VariableMapper> factoryBean = new MapperFactoryBean<>(
+        VariableMapper.class);
+    factoryBean.setSqlSessionFactory(sqlSessionFactory);
+    return factoryBean;
+  }
+
+  @Bean
   public ProcessRdbmsService processRdbmsService(
       final ProcessInstanceMapper processInstanceMapper) {
     return new ProcessRdbmsService(processInstanceMapper);
   }
 
   @Bean
-  public RdbmsService rdbmsService(final ProcessRdbmsService processRdbmsService) {
+  public VariableRdbmsService variableRdbmsService(
+      final VariableMapper variableMapper) {
+    return new VariableRdbmsService(variableMapper);
+  }
+
+  @Bean
+  public RdbmsService rdbmsService(
+      final ProcessRdbmsService processRdbmsService,
+      final VariableRdbmsService variableRdbmsService
+  ) {
     return new RdbmsService(
-        processRdbmsService
+        processRdbmsService,
+        variableRdbmsService
     );
   }
 

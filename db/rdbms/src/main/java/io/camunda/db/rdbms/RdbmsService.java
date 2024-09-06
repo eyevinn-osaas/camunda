@@ -8,6 +8,7 @@
 package io.camunda.db.rdbms;
 
 import io.camunda.db.rdbms.service.ProcessRdbmsService;
+import io.camunda.db.rdbms.service.VariableRdbmsService;
 
 /**
  * A holder for all rdbms services
@@ -15,13 +16,21 @@ import io.camunda.db.rdbms.service.ProcessRdbmsService;
 public class RdbmsService {
 
   private final ProcessRdbmsService processRdbmsService;
+  private final VariableRdbmsService variableRdbmsService;
 
-  public RdbmsService(final ProcessRdbmsService processRdbmsService) {
+  public RdbmsService(
+      final ProcessRdbmsService processRdbmsService,
+      final VariableRdbmsService variableRdbmsService
+  ) {
     this.processRdbmsService = processRdbmsService;
+    this.variableRdbmsService = variableRdbmsService;
   }
 
   public ProcessRdbmsService processRdbmsService() {
     return processRdbmsService;
   }
 
+  public VariableRdbmsService getVariableRdbmsService() {
+    return variableRdbmsService;
+  }
 }

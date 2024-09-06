@@ -18,7 +18,7 @@ import io.camunda.zeebe.protocol.record.Record;
 import io.camunda.zeebe.protocol.record.ValueType;
 import io.camunda.zeebe.protocol.record.intent.ProcessInstanceCreationIntent;
 import io.camunda.zeebe.protocol.record.value.ProcessInstanceCreationRecordValue;
-import java.time.Duration;
+import java.util.HashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,19 +31,25 @@ public class RdbmsExporter implements Exporter {
 
   private RdbmsService rdbmsService;
 
+  private final HashMap<ValueType, RdbmsExportHandler> registeredHandlers = new HashMap<>();
+
   @Override
   public void configure(final Context context) {
     ((ExporterContext) context).getSpringBrokerBridge()
         .flatMap(SpringBrokerBridge::getRdbmsService)
-        .ifPresent(service -> rdbmsService = service);
-    LOG.info("RDBMS Exporter configured!");
+        .ifPresent(service -> {
+          rdbmsService = service;
+          registerHandler();
+        });
+
+    LOG.info("[RDBMS Exporter] RDBMS Exporter configured!");
   }
 
   @Override
   public void open(final Controller controller) {
     this.controller = controller;
 
-    LOG.info("Exporter opened");
+    LOG.info("[RDBMS Exporter] Exporter opened");
   }
 
   @Override
@@ -51,22 +57,37 @@ public class RdbmsExporter implements Exporter {
     try {
       updateLastExportedPosition();
     } catch (final Exception e) {
-      LOG.warn("Failed to flush records before closing exporter.", e);
+      LOG.warn("[RDBMS Exporter] Failed to flush records before closing exporter.", e);
     }
 
-    LOG.info("Exporter closed");
+    LOG.info("[RDBMS Exporter] Exporter closed");
   }
 
   @Override
   public void export(final Record<?> record) {
-    LOG.debug("Exporting record {}-{} - {}:{}", record.getPartitionId(), record.getPosition(),
+    LOG.debug("[RDBMS Exporter] Exporting record {}-{} - {}:{}", record.getPartitionId(),
+        record.getPosition(),
         record.getValueType(), record.getIntent());
+
+    if (registeredHandlers.containsKey(record.getValueType())) {
+      final var handler = registeredHandlers.get(record.getValueType());
+      if (handler.canExport(record)) {
+        LOG.debug("[RDBMS Exporter] Exporting record {} with handler {}", record.getValue(),
+            handler.getClass());
+        handler.export(record);
+      } else {
+        LOG.debug("[RDBMS Exporter] Handler {} can not export record {}", handler.getClass(),
+            record.getValueType());
+      }
+    } else {
+      LOG.debug("[RDBMS Exporter] No registered handler found for {}", record.getValueType());
+    }
 
     if (record.getValueType() == ValueType.PROCESS_INSTANCE_CREATION
         && record.getIntent() == ProcessInstanceCreationIntent.CREATED) {
       final ProcessInstanceCreationRecordValue value = (ProcessInstanceCreationRecordValue) record.getValue();
 
-      LOG.debug("Export Process Created event: {}", value.getBpmnProcessId());
+      LOG.debug("[RDBMS Exporter] Export Process Created event: {}", value.getBpmnProcessId());
       rdbmsService.processRdbmsService().save(
           new ProcessInstanceModel(
               value.getProcessInstanceKey(),
@@ -83,6 +104,11 @@ public class RdbmsExporter implements Exporter {
 
   private void updateLastExportedPosition() {
     controller.updateLastExportedRecordPosition(lastPosition);
+  }
+
+  private void registerHandler() {
+    registeredHandlers.put(ValueType.VARIABLE,
+        new VariableExportHandler(rdbmsService.getVariableRdbmsService()));
   }
 
 }
