@@ -7,6 +7,7 @@
  */
 package io.camunda.zeebe.broker.exporter.context;
 
+import io.camunda.zeebe.broker.SpringBrokerBridge;
 import io.camunda.zeebe.exporter.api.context.Configuration;
 import io.camunda.zeebe.exporter.api.context.Context;
 import io.camunda.zeebe.protocol.record.RecordType;
@@ -25,6 +26,7 @@ public final class ExporterContext implements Context {
   private final int partitionId;
   private final MeterRegistry meterRegistry;
   private final InstantSource clock;
+  private final SpringBrokerBridge springBrokerBridge;
 
   private RecordFilter filter = DEFAULT_FILTER;
 
@@ -33,12 +35,14 @@ public final class ExporterContext implements Context {
       final Configuration configuration,
       final int partitionId,
       final MeterRegistry meterRegistry,
-      final InstantSource clock) {
+      final InstantSource clock,
+      final SpringBrokerBridge springBrokerBridge) {
     this.logger = logger;
     this.configuration = configuration;
     this.partitionId = partitionId;
     this.meterRegistry = meterRegistry;
     this.clock = clock;
+    this.springBrokerBridge = springBrokerBridge;
   }
 
   @Override

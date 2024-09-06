@@ -7,6 +7,7 @@
  */
 package io.camunda.zeebe.broker;
 
+import io.camunda.db.rdbms.RdbmsService;
 import io.camunda.zeebe.broker.jobstream.JobStreamService;
 import io.camunda.zeebe.broker.system.management.BrokerAdminService;
 import io.camunda.zeebe.broker.system.monitoring.BrokerHealthCheckService;
@@ -18,16 +19,25 @@ import org.springframework.stereotype.Component;
 
 /**
  * Helper class that allows Spring beans to access information from the Broker code that is not
- * managed by Spring
+ * managed by Spring as well as allowing broker to access Spring Beans
  */
 @Component
 public class SpringBrokerBridge {
+
+  // Access for Spring World
   private Supplier<BrokerHealthCheckService> healthCheckServiceSupplier;
   private Supplier<BrokerAdminService> adminServiceSupplier;
   private Supplier<JobStreamService> jobStreamServiceSupplier;
   private Supplier<JobStreamClient> jobStreamClientSupplier;
 
+  // Access to Spring World
+  private final RdbmsService rdbmsService; // Will be used by RdbmsExporter
+
   private Consumer<Integer> shutdownHelper;
+
+  public SpringBrokerBridge(final RdbmsService rdbmsService) {
+    this.rdbmsService = rdbmsService;
+  }
 
   public void registerBrokerHealthCheckServiceSupplier(
       final Supplier<BrokerHealthCheckService> healthCheckServiceSupplier) {
@@ -63,6 +73,10 @@ public class SpringBrokerBridge {
 
   public Optional<JobStreamService> getJobStreamService() {
     return Optional.ofNullable(jobStreamServiceSupplier).map(Supplier::get);
+  }
+
+  public Optional<RdbmsService> getRdbmsService() {
+    return Optional.ofNullable(rdbmsService);
   }
 
   /**

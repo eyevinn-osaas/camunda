@@ -32,6 +32,7 @@ import org.agrona.CloseHelper;
  * container.
  */
 public final class ExporterContainerRuntime implements CloseableSilently {
+
   private final ActorScheduler scheduler;
   private final ExporterRepository repository;
   private final ZeebeDb<ZbColumnFamilies> zeebeDb;
@@ -94,7 +95,8 @@ public final class ExporterContainerRuntime implements CloseableSilently {
 
     final var container =
         new ExporterContainer(
-            descriptor, partitionId, initializationInfo, meterRegistry, InstantSource.system());
+            descriptor, partitionId, initializationInfo, meterRegistry, InstantSource.system(),
+            null);
     container.initContainer(actor.getActorControl(), metrics, state, ExporterPhase.EXPORTING);
 
     return container;
@@ -117,6 +119,7 @@ public final class ExporterContainerRuntime implements CloseableSilently {
   }
 
   static final class RuntimeActor extends Actor {
+
     ActorControl getActorControl() {
       return actor;
     }

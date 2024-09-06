@@ -7,8 +7,7 @@
  */
 package io.camunda.search.rdbms;
 
-import io.camunda.exporter.rdbms.domain.ProcessInstanceModel;
-import io.camunda.exporter.rdbms.sql.ProcessInstanceMapper;
+import io.camunda.db.rdbms.RdbmsService;
 import io.camunda.search.clients.CamundaSearchClient;
 import io.camunda.search.clients.core.SearchQueryHit;
 import io.camunda.search.clients.core.SearchQueryRequest;
@@ -22,19 +21,19 @@ import java.util.List;
 
 public class RdbmsSearchClient implements CamundaSearchClient {
 
-  private final ProcessInstanceMapper processInstanceMapper;
+  private final RdbmsService rdbmsService;
 
-  public RdbmsSearchClient(ProcessInstanceMapper processInstanceMapper) {
-    this.processInstanceMapper = processInstanceMapper;
+  public RdbmsSearchClient(final RdbmsService rdbmsService) {
+    this.rdbmsService = rdbmsService;
   }
 
   @Override
   public <T> Either<Exception, SearchQueryResponse<T>> search(
       final SearchQueryRequest searchRequest, final Class<T> documentClass) {
     if (searchRequest.index().stream().anyMatch(s -> s.startsWith("operate-list-view"))) {
-      var bpmnProcessId = getBpmnProcessId(searchRequest.query());
+      final var bpmnProcessId = getBpmnProcessId(searchRequest.query());
       if (bpmnProcessId != null) {
-        var processInstance = processInstanceMapper.findOne(bpmnProcessId);
+        final var processInstance = rdbmsService.processRdbmsService().findOne(bpmnProcessId);
 
         return Either.right(new SearchQueryResponse(1, "bla", List.of(
             new SearchQueryHit.Builder()
@@ -58,16 +57,16 @@ public class RdbmsSearchClient implements CamundaSearchClient {
 
   }
 
-  public String getBpmnProcessId(SearchQuery searchQuery) {
-    if (searchQuery.queryOption() instanceof SearchTermQuery searchTermQuery) {
+  public String getBpmnProcessId(final SearchQuery searchQuery) {
+    if (searchQuery.queryOption() instanceof final SearchTermQuery searchTermQuery) {
       if (searchTermQuery.field().equalsIgnoreCase("bpmnProcessId")) {
         return searchTermQuery.value().stringValue();
       } else {
         return null;
       }
-    } else if ( searchQuery.queryOption() instanceof SearchBoolQuery searchBoolQuery) {
-      for ( SearchQuery sq : searchBoolQuery.must()) {
-        var term = getBpmnProcessId(sq);
+    } else if (searchQuery.queryOption() instanceof final SearchBoolQuery searchBoolQuery) {
+      for (final SearchQuery sq : searchBoolQuery.must()) {
+        final var term = getBpmnProcessId(sq);
         if (term != null) {
           return term;
         }

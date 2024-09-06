@@ -8,6 +8,7 @@
 package io.camunda.zeebe.broker.exporter.stream;
 
 import io.camunda.zeebe.broker.Loggers;
+import io.camunda.zeebe.broker.SpringBrokerBridge;
 import io.camunda.zeebe.broker.exporter.context.ExporterContext;
 import io.camunda.zeebe.broker.exporter.repo.ExporterDescriptor;
 import io.camunda.zeebe.broker.exporter.stream.ExporterDirector.ExporterInitializationInfo;
@@ -53,7 +54,8 @@ final class ExporterContainer implements Controller {
       final int partitionId,
       final ExporterInitializationInfo initializationInfo,
       final MeterRegistry meterRegistry,
-      final InstantSource clock) {
+      final InstantSource clock,
+      final SpringBrokerBridge springBrokerBridge) {
     this.initializationInfo = initializationInfo;
     context =
         new ExporterContext(
@@ -61,7 +63,8 @@ final class ExporterContainer implements Controller {
             descriptor.getConfiguration(),
             partitionId,
             meterRegistry,
-            clock);
+            clock,
+            springBrokerBridge);
 
     exporter = descriptor.newInstance();
   }

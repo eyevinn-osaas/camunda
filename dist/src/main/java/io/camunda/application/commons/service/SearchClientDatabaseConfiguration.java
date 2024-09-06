@@ -8,7 +8,7 @@
 package io.camunda.application.commons.service;
 
 import io.camunda.application.commons.service.SearchClientDatabaseConfiguration.SearchClientProperties;
-import io.camunda.exporter.rdbms.sql.ProcessInstanceMapper;
+import io.camunda.db.rdbms.RdbmsService;
 import io.camunda.search.clients.CamundaSearchClient;
 import io.camunda.search.connect.SearchClientProvider;
 import io.camunda.search.connect.SearchClientProvider.SearchClientProviders;
@@ -52,8 +52,8 @@ public class SearchClientDatabaseConfiguration {
 
   @Bean
   @ConditionalOnProperty(prefix = "camunda.database", name = "type", havingValue = "rdbms")
-  public SearchClientProvider rdbmsClientProvider(ProcessInstanceMapper processInstanceMapper) {
-    return connectConfiguration -> new RdbmsSearchClient(processInstanceMapper);
+  public SearchClientProvider rdbmsClientProvider(final RdbmsService rdbmsService) {
+    return connectConfiguration -> new RdbmsSearchClient(rdbmsService);
   }
 
   @Bean
@@ -62,5 +62,7 @@ public class SearchClientDatabaseConfiguration {
   }
 
   @ConfigurationProperties("camunda.database")
-  public static final class SearchClientProperties extends ConnectConfiguration {}
+  public static final class SearchClientProperties extends ConnectConfiguration {
+
+  }
 }
