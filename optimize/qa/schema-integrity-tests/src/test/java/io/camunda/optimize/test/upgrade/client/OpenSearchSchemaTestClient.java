@@ -40,12 +40,6 @@ public class OpenSearchSchemaTestClient extends AbstractDatabaseSchemaTestClient
 
   public OpenSearchSchemaTestClient(final String name, final int port) {
     super(name);
-    //    final ConfigurationService config = ConfigurationService.createDefault();
-    //    final DatabaseConnectionNodeConfiguration osConnectionConfig =
-    //        config.getOpenSearchConfiguration().getConnectionNodes().get(0);
-    //    osConnectionConfig.setHost("localhost");
-    //    osConnectionConfig.setHttpPort(port);
-    //    openSearchClient = OpenSearchClientBuilder.buildOpenSearchClientFromConfig(config);
     openSearchClient =
         new OpenSearchClient(
             ApacheHttpClient5TransportBuilder.builder(new HttpHost("http", "localhost", port))
