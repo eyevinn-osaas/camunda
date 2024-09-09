@@ -11,8 +11,7 @@ public record QueueItem(
     ContextType contextType,
     Object id,
     String statementId,
-    Object parameter,
-    Long eventPosition
+    Object parameter
 ) {
 
 }

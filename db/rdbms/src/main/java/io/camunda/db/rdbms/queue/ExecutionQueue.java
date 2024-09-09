@@ -7,22 +7,28 @@
  */
 package io.camunda.db.rdbms.queue;
 
+import io.camunda.zeebe.scheduler.Actor;
+import io.camunda.zeebe.scheduler.ActorScheduler;
+import io.camunda.zeebe.scheduler.SchedulingHints;
+import java.time.Duration;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ExecutionQueue {
+public class ExecutionQueue extends Actor {
 
   private static final Logger LOG = LoggerFactory.getLogger(ExecutionQueue.class);
 
   private final SqlSessionFactory sessionFactory;
-  private final LinkedList<ExecutionListener> executionListeners = new LinkedList<>();
+  private final List<FlushListener> flushListeners = new ArrayList<>();
 
-  public ExecutionQueue(SqlSessionFactory sessionFactory) {
+  public ExecutionQueue(ActorScheduler actorScheduler, SqlSessionFactory sessionFactory) {
     this.sessionFactory = sessionFactory;
+
+    actorScheduler.submitActor(this, SchedulingHints.IO_BOUND);
+    actor.run(() -> actor.schedule(Duration.ofSeconds(5), this::flushAndReschedule));
   }
 
   private final List<QueueItem> queue = new ArrayList<>();
@@ -33,8 +39,8 @@ public class ExecutionQueue {
     checkQueueForFlush();
   }
 
-  public void registerExecutionListener(ExecutionListener listener) {
-    this.executionListeners.add(listener);
+  public void registerFlushListener(FlushListener listener) {
+    this.flushListeners.add(listener);
   }
 
   public void flush() {
@@ -51,12 +57,11 @@ public class ExecutionQueue {
         var entry = queue.getFirst();
         LOG.trace("Executing entry: {}", entry);
         session.update(entry.statementId(), entry.parameter());
-        lastPosition = entry.eventPosition();
         queue.removeFirst();
       }
 
-      for (var listener : executionListeners) {
-        listener.onSuccess(lastPosition);
+      for (var listener : flushListeners) {
+        listener.onFlushSuccess();
       }
       session.commit();
     } catch (Exception e) {
@@ -73,4 +78,10 @@ public class ExecutionQueue {
       flush();
     }
   }
+
+  private void flushAndReschedule() {
+    flush();
+    actor.schedule(Duration.ofSeconds(5), this::flushAndReschedule);
+  }
+
 }

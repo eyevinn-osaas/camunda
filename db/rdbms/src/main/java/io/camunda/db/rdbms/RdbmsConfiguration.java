@@ -12,6 +12,7 @@ import io.camunda.db.rdbms.service.ProcessRdbmsService;
 import io.camunda.db.rdbms.service.VariableRdbmsService;
 import io.camunda.db.rdbms.sql.ProcessInstanceMapper;
 import io.camunda.db.rdbms.sql.VariableMapper;
+import io.camunda.zeebe.scheduler.ActorScheduler;
 import javax.sql.DataSource;
 import liquibase.integration.spring.MultiTenantSpringLiquibase;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -61,8 +62,8 @@ public class RdbmsConfiguration {
   }
 
   @Bean
-  public ExecutionQueue executionQueue(final SqlSessionFactory sqlSessionFactory) {
-    return new ExecutionQueue(sqlSessionFactory);
+  public ExecutionQueue executionQueue(final ActorScheduler actorScheduler, final SqlSessionFactory sqlSessionFactory) {
+    return new ExecutionQueue(actorScheduler, sqlSessionFactory);
   }
 
   @Bean

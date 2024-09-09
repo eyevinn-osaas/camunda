@@ -28,8 +28,7 @@ public class ProcessRdbmsService {
         ContextType.PROCESS_INSTANCE,
         processInstance.processInstanceKey(),
         "io.camunda.db.rdbms.sql.ProcessInstanceMapper.insert",
-        processInstance,
-        eventPosition
+        processInstance
     ));
   }
 

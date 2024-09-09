@@ -15,7 +15,6 @@ import io.camunda.zeebe.exporter.api.context.Context;
 import io.camunda.zeebe.exporter.api.context.Controller;
 import io.camunda.zeebe.protocol.record.Record;
 import io.camunda.zeebe.protocol.record.ValueType;
-import java.time.Duration;
 import java.util.HashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,11 +23,12 @@ public class RdbmsExporter implements Exporter {
 
   private static final Logger LOG = LoggerFactory.getLogger(RdbmsExporter.class);
 
-  private Controller controller;
+  private final HashMap<ValueType, RdbmsExportHandler> registeredHandlers = new HashMap<>();
 
+  private Controller controller;
   private RdbmsService rdbmsService;
 
-  private final HashMap<ValueType, RdbmsExportHandler> registeredHandlers = new HashMap<>();
+  private long lastPosition = -1;
 
   @Override
   public void configure(final Context context) {
@@ -47,10 +47,8 @@ public class RdbmsExporter implements Exporter {
     this.controller = controller;
 
     LOG.info("[RDBMS Exporter] Exporter opened");
-    this.rdbmsService.executionQueue().registerExecutionListener(
-        controller::updateLastExportedRecordPosition);
-
-    this.controller.scheduleCancellableTask(Duration.ofSeconds(5), this::flushAndReschedule);
+    this.rdbmsService.executionQueue().registerFlushListener(
+        () -> controller.updateLastExportedRecordPosition(lastPosition));
 
     LOG.info("Exporter opened");
   }
@@ -74,6 +72,7 @@ public class RdbmsExporter implements Exporter {
 
     if (registeredHandlers.containsKey(record.getValueType())) {
       final var handler = registeredHandlers.get(record.getValueType());
+      lastPosition = record.getPosition();
       if (handler.canExport(record)) {
         LOG.debug("[RDBMS Exporter] Exporting record {} with handler {}", record.getValue(),
             handler.getClass());
@@ -87,14 +86,8 @@ public class RdbmsExporter implements Exporter {
     }
   }
 
-  public void flushAndReschedule() {
-    this.rdbmsService.executionQueue().flush();
-    this.controller.scheduleCancellableTask(Duration.ofSeconds(5), this::flushAndReschedule);
-  }
-
   private void registerHandler() {
     registeredHandlers.put(ValueType.PROCESS_INSTANCE, new ProcessInstanceExportHandler(rdbmsService.getProcessRdbmsService()));
     registeredHandlers.put(ValueType.VARIABLE, new VariableExportHandler(rdbmsService.getVariableRdbmsService()));
   }
-
 }

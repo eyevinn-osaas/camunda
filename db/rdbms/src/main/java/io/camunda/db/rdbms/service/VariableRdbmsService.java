@@ -28,19 +28,17 @@ public class VariableRdbmsService {
   public void save(final VariableModel variable, final long eventPosition) {
     if (!exists(variable.key())) {
       executionQueue.executeInQueue(new QueueItem(
-          ContextType.PROCESS_INSTANCE,
+          ContextType.VARIABLE,
           variable.key(),
           "io.camunda.db.rdbms.sql.VariableMapper.insert",
-          variable,
-          eventPosition
+          variable
       ));
     } else {
       executionQueue.executeInQueue(new QueueItem(
-          ContextType.PROCESS_INSTANCE,
+          ContextType.VARIABLE,
           variable.key(),
           "io.camunda.db.rdbms.sql.VariableMapper.update",
-          variable,
-          eventPosition
+          variable
       ));
     }
   }

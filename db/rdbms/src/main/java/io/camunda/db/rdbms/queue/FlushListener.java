@@ -7,7 +7,7 @@
  */
 package io.camunda.db.rdbms.queue;
 
-public interface ExecutionListener {
+public interface FlushListener {
 
-  void onSuccess(long eventPosition);
+  void onFlushSuccess();
 }
