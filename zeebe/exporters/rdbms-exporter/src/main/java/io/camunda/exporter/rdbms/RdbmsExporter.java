@@ -47,8 +47,7 @@ public class RdbmsExporter implements Exporter {
     this.controller = controller;
 
     LOG.info("[RDBMS Exporter] Exporter opened");
-    this.rdbmsService.executionQueue().registerFlushListener(
-        () -> controller.updateLastExportedRecordPosition(lastPosition));
+    this.rdbmsService.executionQueue().registerFlushListener(this::updatePosition);
 
     LOG.info("Exporter opened");
   }
@@ -89,5 +88,10 @@ public class RdbmsExporter implements Exporter {
   private void registerHandler() {
     registeredHandlers.put(ValueType.PROCESS_INSTANCE, new ProcessInstanceExportHandler(rdbmsService.getProcessRdbmsService()));
     registeredHandlers.put(ValueType.VARIABLE, new VariableExportHandler(rdbmsService.getVariableRdbmsService()));
+  }
+
+  private void updatePosition() {
+    LOG.debug("Updating position to {}", lastPosition);
+    controller.updateLastExportedRecordPosition(lastPosition);
   }
 }
