@@ -361,14 +361,13 @@ jobs:
   deploy-artifacts:
     if: github.event_name == 'push' && (github.ref_name == 'main' || startsWith(github.ref_name, 'stable/'))
     name: Deploy Artifacts
-    needs: [ integration-tests, upgrade ]
+    needs: [ integration-tests ]
     uses: ./.github/workflows/optimize-deploy-artifacts.yml
     secrets: inherit
 
   # Rerun failed jobs running on self-hosted runners in case of network issues or node preemption
   rerun-failed-jobs:
     needs:
-      - upgrade
       - integration-tests
       - integration-tests-os
       - deploy-artifacts
