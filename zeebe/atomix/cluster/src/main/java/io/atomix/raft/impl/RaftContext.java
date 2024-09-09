@@ -673,7 +673,12 @@ public class RaftContext implements AutoCloseable, HealthMonitorable {
 
     // Force state transitions to occur synchronously in order to prevent race conditions.
     try {
-      this.role = createRole(role);
+      final RaftRole newRole = createRole(role);
+      synchronized (role) {
+        // role is accessed by external threads. To ensure thread-safe access, we need to
+        // synchronize the udpate.
+        this.role = newRole;
+      }
       this.role.start().get();
     } catch (final InterruptedException | ExecutionException e) {
       throw new IllegalStateException("failed to initialize Raft state", e);
@@ -1004,7 +1009,11 @@ public class RaftContext implements AutoCloseable, HealthMonitorable {
    * @return The current server state.
    */
   public RaftRole getRaftRole() {
-    return role;
+    // This method is accessed by external threads. To ensure thread-safe access, we need to
+    // synchronize access to role.
+    synchronized (role) {
+      return role;
+    }
   }
 
   public RaftRoleMetrics getRaftRoleMetrics() {
@@ -1017,7 +1026,7 @@ public class RaftContext implements AutoCloseable, HealthMonitorable {
    * @return The current server role.
    */
   public Role getRole() {
-    return role.role();
+    return getRaftRole().role();
   }
 
   /**
