@@ -30,15 +30,42 @@ test.beforeAll(async ({request}) => {
       {timeout: SETUP_WAITING_TIME},
     )
     .toBe(200);
+
+  await expect
+    .poll(
+      async () => {
+        const response = await request.post(
+          `${config.endpoint}/api/process-instances/${instance.processInstanceKey}/listeners`,
+          {
+            data: {
+              flowNodeId: 'taskWithListener',
+            },
+          },
+        );
+
+        const finalResponse = await response.json();
+        console.log(finalResponse);
+
+        return finalResponse;
+      },
+      {timeout: SETUP_WAITING_TIME},
+    )
+    .toHaveProperty('totalCount', 1);
 });
 
-test.describe('Process Instance Listeners', () => {
+test.describe.only('Process Instance Listeners', () => {
   test('Listeners tab button show/hide', async ({
     page,
     processInstancePage,
   }) => {
     const processInstanceKey = initialData.instance.processInstanceKey;
     processInstancePage.navigateToProcessInstance({id: processInstanceKey});
+
+    page.on('response', async (response) => {
+      if (response.url().includes('listeners')) {
+        console.log('<<', await response.json());
+      }
+    });
 
     // Start flow node should NOT enable listeners tab
     await page.getByLabel('StartEvent_1').click();
