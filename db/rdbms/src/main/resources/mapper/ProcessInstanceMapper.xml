@@ -14,7 +14,9 @@
     SELECT PROCESS_INSTANCE_KEY,
            BPMN_PROCESS_ID,
            PROCESS_DEFINITION_KEY,
-           TENANT_ID
+           TENANT_ID,
+           PARENT_PROCESS_INSTANCE_KEY,
+           VERSION
     FROM PROCESS_INSTANCE
     WHERE PROCESS_INSTANCE_KEY = #{processInstanceKey}
   </select>
@@ -28,12 +30,14 @@
              FROM dual) t
     ON t.ID = pi.PROCESS_INSTANCE_KEY
     WHEN NOT MATCHED THEN
-      INSERT (PROCESS_INSTANCE_KEY, BPMN_PROCESS_ID, PROCESS_DEFINITION_KEY, TENANT_ID)
-      VALUES (#{processInstanceKey}, #{bpmnProcessId}, #{processDefinitionKey}, #{tenantId})
+      INSERT (PROCESS_INSTANCE_KEY, BPMN_PROCESS_ID, PROCESS_DEFINITION_KEY, TENANT_ID, PARENT_PROCESS_INSTANCE_KEY, VERSION)
+      VALUES (#{processInstanceKey}, #{bpmnProcessId}, #{processDefinitionKey}, #{tenantId}, #{parentProcessInstanceKey}, #{version})
     WHEN MATCHED THEN
       UPDATE
       SET BPMN_PROCESS_ID        = #{bpmnProcessId},
           PROCESS_DEFINITION_KEY = #{processDefinitionKey},
-          TENANT_ID              = #{tenantId}
+          TENANT_ID              = #{tenantId},
+          PARENT_PROCESS_INSTANCE_KEY = #{parentProcessInstanceKey},
+          VERSION = #{version}
   </insert>
 </mapper>

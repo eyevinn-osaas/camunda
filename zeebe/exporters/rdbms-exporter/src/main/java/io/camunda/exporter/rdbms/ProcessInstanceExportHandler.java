@@ -10,34 +10,38 @@ package io.camunda.exporter.rdbms;
 import io.camunda.db.rdbms.domain.ProcessInstanceModel;
 import io.camunda.db.rdbms.service.ProcessRdbmsService;
 import io.camunda.zeebe.protocol.impl.record.value.processinstance.ProcessInstanceCreationRecord;
+import io.camunda.zeebe.protocol.impl.record.value.processinstance.ProcessInstanceRecord;
 import io.camunda.zeebe.protocol.record.Record;
 import io.camunda.zeebe.protocol.record.intent.ProcessInstanceCreationIntent;
+import io.camunda.zeebe.protocol.record.intent.ProcessInstanceIntent;
 
-public class ProcessExportHandler implements RdbmsExportHandler<ProcessInstanceCreationRecord> {
+public class ProcessInstanceExportHandler implements RdbmsExportHandler<ProcessInstanceRecord> {
 
   private final ProcessRdbmsService processRdbmsService;
 
-  public ProcessExportHandler(final ProcessRdbmsService processRdbmsService) {
+  public ProcessInstanceExportHandler(final ProcessRdbmsService processRdbmsService) {
     this.processRdbmsService = processRdbmsService;
   }
 
   @Override
-  public boolean canExport(final Record<ProcessInstanceCreationRecord> record) {
-    return record.getIntent() == ProcessInstanceCreationIntent.CREATED;
+  public boolean canExport(final Record<ProcessInstanceRecord> record) {
+    return record.getIntent() == ProcessInstanceIntent.ELEMENT_ACTIVATED;
   }
 
   @Override
-  public void export(final Record<ProcessInstanceCreationRecord> record) {
-    final ProcessInstanceCreationRecord value = record.getValue();
+  public void export(final Record<ProcessInstanceRecord> record) {
+    final ProcessInstanceRecord value = record.getValue();
     processRdbmsService.save(map(value), record.getPosition());
   }
 
-  private ProcessInstanceModel map(final ProcessInstanceCreationRecord value) {
+  private ProcessInstanceModel map(final ProcessInstanceRecord value) {
     return new ProcessInstanceModel(
         value.getProcessInstanceKey(),
         value.getBpmnProcessId(),
         value.getProcessDefinitionKey(),
-        value.getTenantId()
+        value.getTenantId(),
+        value.getParentProcessInstanceKey(),
+        value.getVersion()
     );
   }
 }

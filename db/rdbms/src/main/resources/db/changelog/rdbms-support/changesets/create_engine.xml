@@ -24,6 +24,8 @@
       <column name="BPMN_PROCESS_ID" type="VARCHAR(200)" />
       <column name="PROCESS_DEFINITION_KEY" type="NUMBER" />
       <column name="TENANT_ID" type="VARCHAR(200)" />
+      <column name="PARENT_PROCESS_INSTANCE_KEY" type="NUMBER" />
+      <column name="VERSION" type="NUMBER" />
     </createTable>
   </changeSet>
 

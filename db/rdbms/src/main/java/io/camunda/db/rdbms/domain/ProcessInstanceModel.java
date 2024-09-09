@@ -11,7 +11,8 @@ public record ProcessInstanceModel(
     Long processInstanceKey,
     String bpmnProcessId,
     Long processDefinitionKey,
-    String tenantId
-
+    String tenantId,
+    Long parentProcessInstanceKey,
+    int version
 ) {
 }
