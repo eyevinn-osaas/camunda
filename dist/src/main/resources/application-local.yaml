@@ -150,7 +150,7 @@ camunda:
 logging:
   level:
     io:
-      camunda: TRACE
+      camunda: DEBUG
 
 spring:
   datasource:

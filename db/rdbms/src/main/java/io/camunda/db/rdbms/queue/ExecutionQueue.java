@@ -13,6 +13,8 @@ import io.camunda.zeebe.scheduler.SchedulingHints;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,14 +26,14 @@ public class ExecutionQueue extends Actor {
   private final SqlSessionFactory sessionFactory;
   private final List<FlushListener> flushListeners = new ArrayList<>();
 
+  private final Queue<QueueItem> queue = new ConcurrentLinkedQueue<>();
+
   public ExecutionQueue(ActorScheduler actorScheduler, SqlSessionFactory sessionFactory) {
     this.sessionFactory = sessionFactory;
 
     actorScheduler.submitActor(this, SchedulingHints.IO_BOUND);
     actor.run(() -> actor.schedule(Duration.ofSeconds(5), this::flushAndReschedule));
   }
-
-  private final List<QueueItem> queue = new ArrayList<>();
 
   public void executeInQueue(QueueItem entry) {
     LOG.debug("Added entry to queue: {}", entry);
@@ -52,12 +54,11 @@ public class ExecutionQueue extends Actor {
     var session = sessionFactory.openSession();
 
     try {
-      long lastPosition = -1;
       while (!queue.isEmpty()) {
-        var entry = queue.getFirst();
+        var entry = queue.peek();
         LOG.trace("Executing entry: {}", entry);
         session.update(entry.statementId(), entry.parameter());
-        queue.removeFirst();
+        queue.poll();
       }
 
       for (var listener : flushListeners) {
