@@ -34,9 +34,14 @@ public class VariableRdbmsService {
           variable,
           eventPosition
       ));
-      variableMapper.insert(variable);
     } else {
-      variableMapper.update(variable);
+      executionQueue.executeInQueue(new QueueItem(
+          ContextType.PROCESS_INSTANCE,
+          variable.key(),
+          "io.camunda.db.rdbms.sql.VariableMapper.update",
+          variable,
+          eventPosition
+      ));
     }
   }
 
