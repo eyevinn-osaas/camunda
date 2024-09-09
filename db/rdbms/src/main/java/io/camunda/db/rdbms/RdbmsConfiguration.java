@@ -67,8 +67,9 @@ public class RdbmsConfiguration {
 
   @Bean
   public VariableRdbmsService variableRdbmsService(
+      final ExecutionQueue executionQueue,
       final VariableMapper variableMapper) {
-    return new VariableRdbmsService(variableMapper);
+    return new VariableRdbmsService(executionQueue, variableMapper);
   }
 
   @Bean

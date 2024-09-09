@@ -14,6 +14,8 @@ public interface VariableMapper {
 
   void insert(VariableModel variable);
 
+  void update(VariableModel variable);
+
   VariableModel findOne(Long key);
 
   boolean exists(Long key);
