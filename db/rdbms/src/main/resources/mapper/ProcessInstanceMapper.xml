@@ -25,6 +25,25 @@
     WHERE PROCESS_INSTANCE_KEY = #{processInstanceKey}
   </select>
 
+  <select id="search" parameterType="io.camunda.db.rdbms.domain.ProcessInstanceFilter"
+    resultType="io.camunda.db.rdbms.domain.ProcessInstanceModel">
+    SELECT PROCESS_INSTANCE_KEY,
+           BPMN_PROCESS_ID,
+           PROCESS_DEFINITION_KEY,
+           STATE,
+           START_DATE,
+           END_DATE,
+           TENANT_ID,
+           PARENT_PROCESS_INSTANCE_KEY,
+           PARENT_ELEMENT_INSTANCE_KEY,
+           VERSION
+    FROM PROCESS_INSTANCE
+    WHERE 1 = 1
+    <if test="bpmnProcessId != null">
+      AND BPMN_PROCESS_ID = #{bpmnProcessId}
+    </if>
+  </select>
+
   <insert
     id="insert"
     parameterType="io.camunda.db.rdbms.domain.ProcessInstanceModel"

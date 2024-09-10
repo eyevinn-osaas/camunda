@@ -8,6 +8,7 @@
 package io.camunda.search.rdbms;
 
 import io.camunda.db.rdbms.RdbmsService;
+import io.camunda.db.rdbms.domain.ProcessInstanceFilter;
 import io.camunda.search.clients.CamundaSearchClient;
 import io.camunda.search.clients.core.SearchQueryHit;
 import io.camunda.search.clients.core.SearchQueryRequest;
@@ -33,19 +34,21 @@ public class RdbmsSearchClient implements CamundaSearchClient {
     if (searchRequest.index().stream().anyMatch(s -> s.startsWith("operate-list-view"))) {
       final var bpmnProcessId = getBpmnProcessId(searchRequest.query());
       if (bpmnProcessId != null) {
-        final var processInstance = rdbmsService.getProcessInstanceRdbmsService().findOne(42L);
+        final var processInstances = rdbmsService.getProcessInstanceRdbmsService().search(new ProcessInstanceFilter(bpmnProcessId));
 
-        return Either.right(new SearchQueryResponse(1, "bla", List.of(
-            new SearchQueryHit.Builder()
-                .source(new ProcessInstanceEntity(
-                    null, null, null, "42",
-                    null, null, null,
-                    null, null, null,
-                    null, null, null,
-                    null, null, null
-                ))
-                .build()
-        )));
+        return Either.right(new SearchQueryResponse(1, "bla",
+            processInstances.stream().map(pi ->
+                new SearchQueryHit.Builder()
+                    .source(new ProcessInstanceEntity(
+                        pi.processInstanceKey(), null, pi.version(), pi.bpmnProcessId(),
+                        pi.parentProcessInstanceKey(), pi.parentElementInstanceKey(), pi.startDate().toString(),
+                        null, pi.state().name(), null,
+                        null, pi.processDefinitionKey(), pi.tenantId(),
+                        null, null, null
+                    ))
+                    .build()
+            ).toList()
+        ));
       }
     }
 

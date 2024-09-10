@@ -14,9 +14,10 @@ import io.camunda.zeebe.protocol.impl.record.value.processinstance.ProcessInstan
 import io.camunda.zeebe.protocol.record.Record;
 import io.camunda.zeebe.protocol.record.intent.ProcessInstanceIntent;
 import io.camunda.zeebe.protocol.record.value.BpmnElementType;
+import io.camunda.zeebe.protocol.record.value.ProcessInstanceRecordValue;
 import java.time.Instant;
 
-public class ProcessInstanceExportHandler implements RdbmsExportHandler<ProcessInstanceRecord> {
+public class ProcessInstanceExportHandler implements RdbmsExportHandler<ProcessInstanceRecordValue> {
 
   private final ProcessInstanceRdbmsService processInstanceRdbmsService;
 
@@ -25,18 +26,18 @@ public class ProcessInstanceExportHandler implements RdbmsExportHandler<ProcessI
   }
 
   @Override
-  public boolean canExport(final Record<ProcessInstanceRecord> record) {
+  public boolean canExport(final Record<ProcessInstanceRecordValue> record) {
     return record.getValue().getBpmnElementType() == BpmnElementType.PROCESS;
   }
 
   @Override
-  public void export(final Record<ProcessInstanceRecord> record) {
+  public void export(final Record<ProcessInstanceRecordValue> record) {
     if (record.getValue().getBpmnElementType() == BpmnElementType.PROCESS) {
       exportProcessInstance(record);
     }
   }
 
-  private void exportProcessInstance(final Record<ProcessInstanceRecord> record) {
+  private void exportProcessInstance(final Record<ProcessInstanceRecordValue> record) {
     var value = record.getValue();
     if (record.getIntent().equals(ProcessInstanceIntent.ELEMENT_ACTIVATING)) {
       processInstanceRdbmsService.create(map(record));
@@ -69,7 +70,7 @@ public class ProcessInstanceExportHandler implements RdbmsExportHandler<ProcessI
     }
   }
 
-  private ProcessInstanceModel map(final Record<ProcessInstanceRecord> record) {
+  private ProcessInstanceModel map(final Record<ProcessInstanceRecordValue> record) {
     var value = record.getValue();
     return new ProcessInstanceModel(
         value.getProcessInstanceKey(),

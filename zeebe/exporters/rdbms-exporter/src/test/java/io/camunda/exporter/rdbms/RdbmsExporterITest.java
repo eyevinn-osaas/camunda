@@ -18,6 +18,7 @@ import io.camunda.zeebe.protocol.record.Record;
 import io.camunda.zeebe.protocol.record.RecordValue;
 import io.camunda.zeebe.protocol.record.ValueType;
 import io.camunda.zeebe.protocol.record.intent.ProcessInstanceIntent;
+import io.camunda.zeebe.protocol.record.intent.ProcessIntent;
 import io.camunda.zeebe.protocol.record.intent.VariableIntent;
 import io.camunda.zeebe.protocol.record.value.BpmnElementType;
 import io.camunda.zeebe.protocol.record.value.ProcessInstanceRecordValue;
@@ -64,10 +65,10 @@ class RdbmsExporterITest {
   @Test
   public void shouldExportProcessInstance() {
     // given
-    var processInstanceRecord = factory.generateRecordWithIntent(ValueType.PROCESS_INSTANCE, ProcessInstanceIntent.ELEMENT_ACTIVATED);
+    var processInstanceRecord = factory.generateRecordWithIntent(ValueType.PROCESS_INSTANCE, ProcessInstanceIntent.ELEMENT_ACTIVATING);
     // TODO ... DIRTY!!!!!
     while (true) {
-      processInstanceRecord = factory.generateRecordWithIntent(ValueType.PROCESS_INSTANCE, ProcessInstanceIntent.ELEMENT_ACTIVATED);
+      processInstanceRecord = factory.generateRecordWithIntent(ValueType.PROCESS_INSTANCE, ProcessInstanceIntent.ELEMENT_ACTIVATING);
       final ProcessInstanceRecordValue value = (ProcessInstanceRecordValue) processInstanceRecord.getValue();
       if (value.getBpmnElementType() == BpmnElementType.PROCESS) {
         break;
@@ -81,21 +82,29 @@ class RdbmsExporterITest {
 
     // then
     final var key = ((ProcessInstanceRecordValue) processInstanceRecord.getValue()).getProcessInstanceKey();
-    final var processInstance = rdbmsService.getProcessRdbmsService().findOne(key);
+    final var processInstance = rdbmsService.getProcessInstanceRdbmsService().findOne(key);
     assertThat(processInstance).isNotNull();
   }
 
   @Test
   public void shouldExportProcessInstanceAndVariables() {
     // given
-    final Record<RecordValue> processInstanceCreated = factory.generateRecordWithIntent(ValueType.PROCESS_INSTANCE, ProcessInstanceIntent.ELEMENT_ACTIVATED);
+    var processInstanceRecord = factory.generateRecordWithIntent(ValueType.PROCESS_INSTANCE, ProcessInstanceIntent.ELEMENT_ACTIVATING);
+    // TODO ... DIRTY!!!!!
+    while (true) {
+      processInstanceRecord = factory.generateRecordWithIntent(ValueType.PROCESS_INSTANCE, ProcessInstanceIntent.ELEMENT_ACTIVATING);
+      final ProcessInstanceRecordValue value = (ProcessInstanceRecordValue) processInstanceRecord.getValue();
+      if (value.getBpmnElementType() == BpmnElementType.PROCESS) {
+        break;
+      }
+    }
     final Record<RecordValue> variableCreated = factory.generateRecordWithIntent(ValueType.VARIABLE, VariableIntent.CREATED);
     final List<Record<RecordValue>> recordList = List.of(
         factory.generateRecord(ValueType.PROCESS),
         factory.generateRecord(ValueType.VARIABLE),
         factory.generateRecord(ValueType.USER_TASK),
         factory.generateRecord(ValueType.JOB),
-        processInstanceCreated,
+        processInstanceRecord,
         variableCreated
     );
 
@@ -105,8 +114,8 @@ class RdbmsExporterITest {
     rdbmsService.executionQueue().flush();
 
     // then
-    final var key = ((ProcessInstanceRecordValue) processInstanceCreated.getValue()).getProcessInstanceKey();
-    final var processInstance = rdbmsService.getProcessRdbmsService().findOne(key);
+    final var key = ((ProcessInstanceRecordValue) processInstanceRecord.getValue()).getProcessInstanceKey();
+    final var processInstance = rdbmsService.getProcessInstanceRdbmsService().findOne(key);
     assertThat(processInstance).isNotNull();
 
     final VariableModel variable = rdbmsService.getVariableRdbmsService().findOne(variableCreated.getKey());

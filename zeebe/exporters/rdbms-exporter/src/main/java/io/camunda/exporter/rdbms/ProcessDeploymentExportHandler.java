@@ -12,8 +12,9 @@ import io.camunda.db.rdbms.service.ProcessDefinitionRdbmsService;
 import io.camunda.zeebe.protocol.impl.record.value.deployment.ProcessRecord;
 import io.camunda.zeebe.protocol.record.Record;
 import io.camunda.zeebe.protocol.record.intent.ProcessIntent;
+import io.camunda.zeebe.protocol.record.value.deployment.Process;
 
-public class ProcessDeploymentExportHandler implements RdbmsExportHandler<ProcessRecord> {
+public class ProcessDeploymentExportHandler implements RdbmsExportHandler<Process> {
 
   private final ProcessDefinitionRdbmsService processDefinitionRdbmsService;
 
@@ -22,17 +23,17 @@ public class ProcessDeploymentExportHandler implements RdbmsExportHandler<Proces
   }
 
   @Override
-  public boolean canExport(final Record<ProcessRecord> record) {
+  public boolean canExport(final Record<Process> record) {
     return record.getIntent() == ProcessIntent.CREATED;
   }
 
   @Override
-  public void export(final Record<ProcessRecord> record) {
-    final ProcessRecord value = record.getValue();
+  public void export(final Record<Process> record) {
+    final Process value = record.getValue();
     processDefinitionRdbmsService.save(map(value));
   }
 
-  private ProcessDefinitionModel map(final ProcessRecord value) {
+  private ProcessDefinitionModel map(final Process value) {
     return new ProcessDefinitionModel(
         value.getProcessDefinitionKey(),
         value.getBpmnProcessId(),
