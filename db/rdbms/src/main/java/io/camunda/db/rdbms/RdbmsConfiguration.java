@@ -15,8 +15,10 @@ import io.camunda.db.rdbms.sql.ExporterPositionMapper;
 import io.camunda.db.rdbms.sql.ProcessInstanceMapper;
 import io.camunda.db.rdbms.sql.VariableMapper;
 import io.camunda.zeebe.scheduler.ActorScheduler;
+import java.util.Properties;
 import javax.sql.DataSource;
 import liquibase.integration.spring.MultiTenantSpringLiquibase;
+import org.apache.ibatis.mapping.VendorDatabaseIdProvider;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.mapper.MapperFactoryBean;
@@ -38,8 +40,17 @@ public class RdbmsConfiguration {
 
   @Bean
   public SqlSessionFactory sqlSessionFactory(final DataSource dataSource) throws Exception {
+    var vendorProperties = new Properties();
+    vendorProperties.put("H2", "h2");
+    vendorProperties.put("PostgreSQL", "postgresql");
+    vendorProperties.put("Oracle", "oracle");
+    vendorProperties.put("SQL Server", "sqlserver");
+    var databaseIdProvider = new VendorDatabaseIdProvider();
+    databaseIdProvider.setProperties(vendorProperties);
+
     final SqlSessionFactoryBean factoryBean = new SqlSessionFactoryBean();
     factoryBean.setDataSource(dataSource);
+    factoryBean.setDatabaseIdProvider(databaseIdProvider);
     factoryBean.addMapperLocations(
         new PathMatchingResourcePatternResolver().getResources("classpath*:mapper/*.xml"));
     return factoryBean.getObject();

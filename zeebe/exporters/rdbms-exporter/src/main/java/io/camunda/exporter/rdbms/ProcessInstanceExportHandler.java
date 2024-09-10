@@ -25,7 +25,7 @@ public class ProcessInstanceExportHandler implements RdbmsExportHandler<ProcessI
 
   @Override
   public boolean canExport(final Record<ProcessInstanceRecord> record) {
-    return record.getIntent() == ProcessInstanceIntent.ELEMENT_ACTIVATED;
+    return record.getValue().getBpmnElementType() == BpmnElementType.PROCESS && record.getIntent() == ProcessInstanceIntent.ELEMENT_ACTIVATED;
   }
 
   @Override
