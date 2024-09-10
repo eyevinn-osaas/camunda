@@ -7,15 +7,22 @@
  */
 package io.camunda.exporter.rdbms;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.camunda.db.rdbms.RdbmsService;
+import io.camunda.db.rdbms.domain.VariableModel;
 import io.camunda.zeebe.broker.SpringBrokerBridge;
 import io.camunda.zeebe.broker.exporter.context.ExporterContext;
 import io.camunda.zeebe.exporter.test.ExporterTestController;
+import io.camunda.zeebe.protocol.record.Record;
+import io.camunda.zeebe.protocol.record.RecordValue;
 import io.camunda.zeebe.protocol.record.ValueType;
 import io.camunda.zeebe.protocol.record.intent.ProcessInstanceIntent;
+import io.camunda.zeebe.protocol.record.intent.VariableIntent;
 import io.camunda.zeebe.protocol.record.value.ProcessInstanceRecordValue;
+import io.camunda.zeebe.protocol.record.value.VariableRecordValue;
 import io.camunda.zeebe.test.broker.protocol.ProtocolFactory;
-import org.assertj.core.api.Assertions;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,6 +73,36 @@ class RdbmsExporterITest {
     // then
     final var key = ((ProcessInstanceRecordValue) processInstanceRecord.getValue()).getProcessInstanceKey();
     final var processInstance = rdbmsService.getProcessRdbmsService().findOne(key);
-    Assertions.assertThat(processInstance).isNotNull();
+    assertThat(processInstance).isNotNull();
+  }
+
+  @Test
+  public void shouldExportProcessInstanceAndVariables() {
+    // given
+    final Record<RecordValue> processInstanceCreated = factory.generateRecordWithIntent(ValueType.PROCESS_INSTANCE, ProcessInstanceIntent.ELEMENT_ACTIVATED);
+    final Record<RecordValue> variableCreated = factory.generateRecordWithIntent(ValueType.VARIABLE, VariableIntent.CREATED);
+    final List<Record<RecordValue>> recordList = List.of(
+        factory.generateRecord(ValueType.PROCESS),
+        factory.generateRecord(ValueType.VARIABLE),
+        factory.generateRecord(ValueType.USER_TASK),
+        factory.generateRecord(ValueType.JOB),
+        processInstanceCreated,
+        variableCreated
+    );
+
+    // when
+    recordList.forEach(record -> exporter.export(record));
+    // and we do a manual flush
+    rdbmsService.executionQueue().flush();
+
+    // then
+    final var key = ((ProcessInstanceRecordValue) processInstanceCreated.getValue()).getProcessInstanceKey();
+    final var processInstance = rdbmsService.getProcessRdbmsService().findOne(key);
+    assertThat(processInstance).isNotNull();
+
+    final VariableModel variable = rdbmsService.getVariableRdbmsService().findOne(variableCreated.getKey());
+    final VariableRecordValue variableRecordValue = (VariableRecordValue) variableCreated.getValue();
+    assertThat(variable).isNotNull();
+    assertThat(variable.value()).isEqualTo(variableRecordValue.getValue());
   }
 }
