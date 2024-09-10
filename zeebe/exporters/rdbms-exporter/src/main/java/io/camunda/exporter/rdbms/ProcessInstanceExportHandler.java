@@ -9,11 +9,10 @@ package io.camunda.exporter.rdbms;
 
 import io.camunda.db.rdbms.domain.ProcessInstanceModel;
 import io.camunda.db.rdbms.service.ProcessRdbmsService;
-import io.camunda.zeebe.protocol.impl.record.value.processinstance.ProcessInstanceCreationRecord;
 import io.camunda.zeebe.protocol.impl.record.value.processinstance.ProcessInstanceRecord;
 import io.camunda.zeebe.protocol.record.Record;
-import io.camunda.zeebe.protocol.record.intent.ProcessInstanceCreationIntent;
 import io.camunda.zeebe.protocol.record.intent.ProcessInstanceIntent;
+import io.camunda.zeebe.protocol.record.value.ProcessInstanceRecordValue;
 
 public class ProcessInstanceExportHandler implements RdbmsExportHandler<ProcessInstanceRecord> {
 
@@ -30,11 +29,11 @@ public class ProcessInstanceExportHandler implements RdbmsExportHandler<ProcessI
 
   @Override
   public void export(final Record<ProcessInstanceRecord> record) {
-    final ProcessInstanceRecord value = record.getValue();
+    final ProcessInstanceRecordValue value = record.getValue();
     processRdbmsService.save(map(value), record.getPosition());
   }
 
-  private ProcessInstanceModel map(final ProcessInstanceRecord value) {
+  private ProcessInstanceModel map(final ProcessInstanceRecordValue value) {
     return new ProcessInstanceModel(
         value.getProcessInstanceKey(),
         value.getBpmnProcessId(),

@@ -11,6 +11,11 @@ import io.camunda.db.rdbms.RdbmsService;
 import io.camunda.zeebe.broker.SpringBrokerBridge;
 import io.camunda.zeebe.broker.exporter.context.ExporterContext;
 import io.camunda.zeebe.exporter.test.ExporterTestController;
+import io.camunda.zeebe.protocol.record.ValueType;
+import io.camunda.zeebe.protocol.record.intent.ProcessInstanceIntent;
+import io.camunda.zeebe.protocol.record.value.ProcessInstanceRecordValue;
+import io.camunda.zeebe.test.broker.protocol.ProtocolFactory;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +32,8 @@ class RdbmsExporterITest {
   private final ExporterTestController controller = new ExporterTestController();
 
   private final RdbmsExporter exporter = new RdbmsExporter();
+
+  private final ProtocolFactory factory = new ProtocolFactory();
 
   @Autowired
   private RdbmsService rdbmsService;
@@ -47,7 +54,18 @@ class RdbmsExporterITest {
   }
 
   @Test
-  public void testExporter() {
+  public void shouldExportProcessInstance() {
+    // given
+    final var processInstanceRecord = factory.generateRecordWithIntent(ValueType.PROCESS_INSTANCE, ProcessInstanceIntent.ELEMENT_ACTIVATED);
 
+    // when
+    exporter.export(processInstanceRecord);
+    // and we do a manual flush
+    rdbmsService.executionQueue().flush();
+
+    // then
+    final var key = ((ProcessInstanceRecordValue) processInstanceRecord.getValue()).getProcessInstanceKey();
+    final var processInstance = rdbmsService.getProcessRdbmsService().findOne(key);
+    Assertions.assertThat(processInstance).isNotNull();
   }
 }
