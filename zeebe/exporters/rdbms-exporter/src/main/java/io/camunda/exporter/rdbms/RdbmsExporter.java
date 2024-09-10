@@ -8,6 +8,7 @@
 package io.camunda.exporter.rdbms;
 
 import io.camunda.db.rdbms.RdbmsService;
+import io.camunda.db.rdbms.domain.ExporterPositionModel;
 import io.camunda.zeebe.broker.SpringBrokerBridge;
 import io.camunda.zeebe.broker.exporter.context.ExporterContext;
 import io.camunda.zeebe.exporter.api.Exporter;
@@ -15,10 +16,14 @@ import io.camunda.zeebe.exporter.api.context.Context;
 import io.camunda.zeebe.exporter.api.context.Controller;
 import io.camunda.zeebe.protocol.record.Record;
 import io.camunda.zeebe.protocol.record.ValueType;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * https://docs.camunda.io/docs/next/components/zeebe/technical-concepts/process-lifecycles/
+ */
 public class RdbmsExporter implements Exporter {
 
   private static final Logger LOG = LoggerFactory.getLogger(RdbmsExporter.class);
@@ -28,10 +33,13 @@ public class RdbmsExporter implements Exporter {
   private Controller controller;
   private RdbmsService rdbmsService;
 
+  private long partitionId;
+  private ExporterPositionModel exporterRdbmsPosition;
   private long lastPosition = -1;
 
   @Override
   public void configure(final Context context) {
+    partitionId = context.getPartitionId();
     ((ExporterContext) context).getSpringBrokerBridge()
         .flatMap(SpringBrokerBridge::getRdbmsService)
         .ifPresent(service -> {
@@ -46,10 +54,10 @@ public class RdbmsExporter implements Exporter {
   public void open(final Controller controller) {
     this.controller = controller;
 
+    initializeRdbmsPosition();
+    rdbmsService.executionQueue().registerPreFlushListener(this::updatePositionInRdbms);
+    rdbmsService.executionQueue().registerPostFlushListener(this::updatePositionInBroker);
     LOG.info("[RDBMS Exporter] Exporter opened");
-    this.rdbmsService.executionQueue().registerFlushListener(this::updatePosition);
-
-    LOG.info("Exporter opened");
   }
 
   @Override
@@ -65,9 +73,15 @@ public class RdbmsExporter implements Exporter {
 
   @Override
   public void export(final Record<?> record) {
-    LOG.debug("[RDBMS Exporter] Exporting record {}-{} - {}:{}", record.getPartitionId(),
+    LOG.debug("[RDBMS Exporter] Process record {}-{} - {}:{}", record.getPartitionId(),
         record.getPosition(),
-        record.getValueType(), record.getIntent());
+        record.getValueType(),
+        record.getIntent());
+
+    if (record.getPosition() <= exporterRdbmsPosition.lastExportedPosition()) {
+      LOG.debug("[RDBMS Exporter] Skip record since it was already exported.");
+      return;
+    }
 
     if (registeredHandlers.containsKey(record.getValueType())) {
       final var handler = registeredHandlers.get(record.getValueType());
@@ -90,8 +104,41 @@ public class RdbmsExporter implements Exporter {
     registeredHandlers.put(ValueType.VARIABLE, new VariableExportHandler(rdbmsService.getVariableRdbmsService()));
   }
 
-  private void updatePosition() {
-    LOG.debug("Updating position to {}", lastPosition);
+  private void updatePositionInBroker() {
+    LOG.debug("[RDBMS Exporter] Updating position to {} in broker", lastPosition);
     controller.updateLastExportedRecordPosition(lastPosition);
+  }
+
+  private void updatePositionInRdbms() {
+    if (lastPosition > exporterRdbmsPosition.lastExportedPosition()) {
+      LOG.debug("[RDBMS Exporter] Updating position to {} in rdbms", lastPosition);
+      exporterRdbmsPosition = new ExporterPositionModel(
+          exporterRdbmsPosition.partitionId(),
+          exporterRdbmsPosition.exporter(),
+          lastPosition,
+          exporterRdbmsPosition.created(),
+          LocalDateTime.now()
+      );
+      rdbmsService.getExporterPositionRdbmsService().update(
+          exporterRdbmsPosition
+      );
+    }
+  }
+
+  private void initializeRdbmsPosition() {
+    exporterRdbmsPosition = rdbmsService.getExporterPositionRdbmsService().findOne(partitionId);
+    if (exporterRdbmsPosition == null) {
+      exporterRdbmsPosition = new ExporterPositionModel(
+          partitionId,
+          getClass().getSimpleName(),
+          lastPosition,
+          LocalDateTime.now(),
+          LocalDateTime.now()
+      );
+      rdbmsService.getExporterPositionRdbmsService().create(exporterRdbmsPosition);
+      LOG.debug("[RDBMS Exporter] Initialize position in rdbms");
+    } else {
+      LOG.debug("[RDBMS Exporter] Found position in rdbms for this exporter: {}", exporterRdbmsPosition);
+    }
   }
 }

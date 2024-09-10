@@ -5,11 +5,16 @@
  * Licensed under the Camunda License 1.0. You may not use this file
  * except in compliance with the Camunda License 1.0.
  */
-package io.camunda.db.rdbms.queue;
+package io.camunda.db.rdbms.domain;
 
-public enum ContextType {
+import java.time.LocalDateTime;
 
-  EXPORTER_POSITION,
-  PROCESS_INSTANCE,
-  VARIABLE,
+public record ExporterPositionModel(
+    Long partitionId,
+    String exporter,
+    Long lastExportedPosition,
+    LocalDateTime created,
+    LocalDateTime lastUpdated
+) {
+
 }

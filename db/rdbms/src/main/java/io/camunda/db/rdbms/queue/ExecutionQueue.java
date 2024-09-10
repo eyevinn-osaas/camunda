@@ -24,25 +24,30 @@ public class ExecutionQueue extends Actor {
   private static final Logger LOG = LoggerFactory.getLogger(ExecutionQueue.class);
 
   private final SqlSessionFactory sessionFactory;
-  private final List<FlushListener> flushListeners = new ArrayList<>();
+  private final List<FlushListener> preFlushListeners = new ArrayList<>();
+  private final List<FlushListener> postFlushListeners = new ArrayList<>();
 
   private final Queue<QueueItem> queue = new ConcurrentLinkedQueue<>();
 
-  public ExecutionQueue(ActorScheduler actorScheduler, SqlSessionFactory sessionFactory) {
+  public ExecutionQueue(final ActorScheduler actorScheduler, final SqlSessionFactory sessionFactory) {
     this.sessionFactory = sessionFactory;
 
     actorScheduler.submitActor(this, SchedulingHints.IO_BOUND);
     actor.run(() -> actor.schedule(Duration.ofSeconds(5), this::flushAndReschedule));
   }
 
-  public void executeInQueue(QueueItem entry) {
+  public void executeInQueue(final QueueItem entry) {
     LOG.debug("Added entry to queue: {}", entry);
     queue.add(entry);
     checkQueueForFlush();
   }
 
-  public void registerFlushListener(FlushListener listener) {
-    this.flushListeners.add(listener);
+  public void registerPreFlushListener(final FlushListener listener) {
+    preFlushListeners.add(listener);
+  }
+
+  public void registerPostFlushListener(final FlushListener listener) {
+    postFlushListeners.add(listener);
   }
 
   public void flush() {
@@ -51,25 +56,24 @@ public class ExecutionQueue extends Actor {
       return;
     }
     LOG.debug("Flushing execution queue with {} items", queue.size());
-    var session = sessionFactory.openSession();
+    final var session = sessionFactory.openSession();
 
     try {
       while (!queue.isEmpty()) {
-        var entry = queue.peek();
+        final var entry = queue.peek();
         LOG.trace("Executing entry: {}", entry);
         session.update(entry.statementId(), entry.parameter());
         queue.poll();
       }
 
-      for (var listener : flushListeners) {
-        listener.onFlushSuccess();
-      }
+      preFlushListeners.forEach(FlushListener::onFlushSuccess);
       session.commit();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOG.error("Error while executing queue", e);
       session.rollback();
     } finally {
       session.close();
+      postFlushListeners.forEach(FlushListener::onFlushSuccess);
     }
   }
 

@@ -7,43 +7,41 @@
   ~ except in compliance with the Camunda License 1.0.
   -->
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="io.camunda.db.rdbms.sql.VariableMapper">
+<mapper namespace="io.camunda.db.rdbms.sql.ExporterPositionMapper">
 
   <select id="findOne"
     statementType="PREPARED"
     parameterType="java.lang.Long"
-    resultType="io.camunda.db.rdbms.domain.VariableModel">
+    resultType="io.camunda.db.rdbms.domain.ExporterPositionModel">
       SELECT
-        VAR_KEY,
-        PROCESS_INSTANCE_KEY,
-        SCOPE_KEY,
-        VAR_NAME,
-        VAR_VALUE,
-        TRUNCATED,
-        TENANT_ID
+        PARTITION_ID,
+        EXPORTER,
+        LAST_EXPORTED_POSITION,
+        CREATED,
+        LAST_UPDATED
       FROM
-        VARIABLE
-      WHERE VAR_KEY = #{key}
+        EXPORTER_POSITION
+      WHERE PARTITION_ID = #{partitionId}
   </select>
 
   <insert
     id="insert"
     statementType="PREPARED"
-    parameterType="io.camunda.db.rdbms.domain.VariableModel"
+    parameterType="io.camunda.db.rdbms.domain.ExporterPositionModel"
     flushCache="true"
     timeout="20">
-      INSERT INTO VARIABLE (VAR_KEY, PROCESS_INSTANCE_KEY, SCOPE_KEY, VAR_NAME, VAR_VALUE, TRUNCATED, TENANT_ID)
-      VALUES (#{key}, #{processInstanceKey}, #{scopeKey}, #{name}, #{value}, #{truncated}, #{tenantId})
+      INSERT INTO EXPORTER_POSITION (PARTITION_ID, EXPORTER, LAST_EXPORTED_POSITION, CREATED, LAST_UPDATED)
+      VALUES (#{partitionId}, #{exporter}, #{lastExportedPosition}, #{created}, #{lastUpdated})
   </insert>
 
   <update
     id="update"
     statementType="PREPARED"
-    parameterType="io.camunda.db.rdbms.domain.VariableModel"
+    parameterType="io.camunda.db.rdbms.domain.ExporterPositionModel"
     flushCache="true"
     timeout="20">
-      UPDATE VARIABLE
-      SET VAR_VALUE = #{value}, TRUNCATED = #{truncated}
-      WHERE VAR_KEY = #{key}
+      UPDATE EXPORTER_POSITION
+      SET LAST_EXPORTED_POSITION = #{lastExportedPosition}, LAST_UPDATED = #{lastUpdated}
+      WHERE PARTITION_ID = #{partitionId}
   </update>
 </mapper>

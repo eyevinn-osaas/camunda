@@ -8,8 +8,10 @@
 package io.camunda.db.rdbms;
 
 import io.camunda.db.rdbms.queue.ExecutionQueue;
+import io.camunda.db.rdbms.service.ExporterPositionRdbmsService;
 import io.camunda.db.rdbms.service.ProcessRdbmsService;
 import io.camunda.db.rdbms.service.VariableRdbmsService;
+import io.camunda.db.rdbms.sql.ExporterPositionMapper;
 import io.camunda.db.rdbms.sql.ProcessInstanceMapper;
 import io.camunda.db.rdbms.sql.VariableMapper;
 import io.camunda.zeebe.scheduler.ActorScheduler;
@@ -62,6 +64,15 @@ public class RdbmsConfiguration {
   }
 
   @Bean
+  public MapperFactoryBean<ExporterPositionMapper> exporterPosition(
+      final SqlSessionFactory sqlSessionFactory) throws Exception {
+    final MapperFactoryBean<ExporterPositionMapper> factoryBean = new MapperFactoryBean<>(
+        ExporterPositionMapper.class);
+    factoryBean.setSqlSessionFactory(sqlSessionFactory);
+    return factoryBean;
+  }
+
+  @Bean
   public ExecutionQueue executionQueue(final ActorScheduler actorScheduler, final SqlSessionFactory sqlSessionFactory) {
     return new ExecutionQueue(actorScheduler, sqlSessionFactory);
   }
@@ -81,10 +92,23 @@ public class RdbmsConfiguration {
   }
 
   @Bean
+  public ExporterPositionRdbmsService exporterPositionRdbmsService(
+      final ExecutionQueue executionQueue,
+      final ExporterPositionMapper exporterPositionMapper) {
+    return new ExporterPositionRdbmsService(executionQueue, exporterPositionMapper);
+  }
+
+  @Bean
   public RdbmsService rdbmsService(final ExecutionQueue executionQueue,
+      final ExporterPositionRdbmsService exporterPositionRdbmsService,
       final VariableRdbmsService variableRdbmsService,
       final ProcessRdbmsService processRdbmsService) {
-    return new RdbmsService(executionQueue, processRdbmsService, variableRdbmsService);
+    return new RdbmsService(
+        executionQueue,
+        exporterPositionRdbmsService,
+        processRdbmsService,
+        variableRdbmsService
+    );
   }
 
 }

@@ -25,26 +25,22 @@ public class VariableRdbmsService {
     this.variableMapper = variableMapper;
   }
 
-  public void save(final VariableModel variable, final long eventPosition) {
-    if (!exists(variable.key())) {
-      executionQueue.executeInQueue(new QueueItem(
-          ContextType.VARIABLE,
-          variable.key(),
-          "io.camunda.db.rdbms.sql.VariableMapper.insert",
-          variable
-      ));
-    } else {
-      executionQueue.executeInQueue(new QueueItem(
-          ContextType.VARIABLE,
-          variable.key(),
-          "io.camunda.db.rdbms.sql.VariableMapper.update",
-          variable
-      ));
-    }
+  public void create(final VariableModel variable) {
+    executionQueue.executeInQueue(new QueueItem(
+        ContextType.VARIABLE,
+        variable.key(),
+        "io.camunda.db.rdbms.sql.VariableMapper.insert",
+        variable
+    ));
   }
 
-  public boolean exists(final Long key) {
-    return variableMapper.exists(key);
+  public void update(final VariableModel variable) {
+    executionQueue.executeInQueue(new QueueItem(
+        ContextType.VARIABLE,
+        variable.key(),
+        "io.camunda.db.rdbms.sql.VariableMapper.update",
+        variable
+    ));
   }
 
   public VariableModel findOne(final Long key) {

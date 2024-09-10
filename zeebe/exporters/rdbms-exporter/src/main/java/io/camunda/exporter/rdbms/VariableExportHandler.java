@@ -31,7 +31,11 @@ public class VariableExportHandler implements RdbmsExportHandler<VariableRecordV
   @Override
   public void export(final Record<VariableRecordValue> record) {
     final VariableRecordValue value = record.getValue();
-    variableRdbmsService.save(map(record.getKey(), value), record.getPosition());
+    if (record.getIntent() == VariableIntent.CREATED) {
+      variableRdbmsService.create(map(record.getKey(), value));
+    } else if (record.getIntent() == VariableIntent.UPDATED || record.getIntent() == VariableIntent.MIGRATED) {
+      variableRdbmsService.update(map(record.getKey(), value));
+    }
   }
 
   private VariableModel map(final Long key, final VariableRecordValue value) {

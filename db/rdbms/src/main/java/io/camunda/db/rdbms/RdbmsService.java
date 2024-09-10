@@ -8,6 +8,7 @@
 package io.camunda.db.rdbms;
 
 import io.camunda.db.rdbms.queue.ExecutionQueue;
+import io.camunda.db.rdbms.service.ExporterPositionRdbmsService;
 import io.camunda.db.rdbms.service.ProcessRdbmsService;
 import io.camunda.db.rdbms.service.VariableRdbmsService;
 
@@ -18,16 +19,23 @@ public class RdbmsService {
 
 
   private final ExecutionQueue executionQueue;
+  private final ExporterPositionRdbmsService exporterPositionRdbmsService;
   private final ProcessRdbmsService processRdbmsService;
   private final VariableRdbmsService variableRdbmsService;
 
   public RdbmsService(final ExecutionQueue executionQueue,
+      final ExporterPositionRdbmsService exporterPositionRdbmsService,
       final ProcessRdbmsService processRdbmsService,
-    final VariableRdbmsService variableRdbmsService
-   ) {
+      final VariableRdbmsService variableRdbmsService
+  ) {
     this.executionQueue = executionQueue;
+    this.exporterPositionRdbmsService = exporterPositionRdbmsService;
     this.processRdbmsService = processRdbmsService;
     this.variableRdbmsService = variableRdbmsService;
+  }
+
+  public ExporterPositionRdbmsService getExporterPositionRdbmsService() {
+    return exporterPositionRdbmsService;
   }
 
   public ProcessRdbmsService getProcessRdbmsService() {

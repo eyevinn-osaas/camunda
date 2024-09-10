@@ -23,11 +23,20 @@ public class ProcessRdbmsService {
     this.processInstanceMapper = processInstanceMapper;
   }
 
-  public void save(final ProcessInstanceModel processInstance, final long eventPosition) {
+  public void create(final ProcessInstanceModel processInstance) {
     executionQueue.executeInQueue(new QueueItem(
         ContextType.PROCESS_INSTANCE,
         processInstance.processInstanceKey(),
         "io.camunda.db.rdbms.sql.ProcessInstanceMapper.insert",
+        processInstance
+    ));
+  }
+
+  public void update(final ProcessInstanceModel processInstance) {
+    executionQueue.executeInQueue(new QueueItem(
+        ContextType.PROCESS_INSTANCE,
+        processInstance.processInstanceKey(),
+        "io.camunda.db.rdbms.sql.ProcessInstanceMapper.update",
         processInstance
     ));
   }

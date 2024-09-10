@@ -19,6 +19,7 @@ import io.camunda.zeebe.protocol.record.RecordValue;
 import io.camunda.zeebe.protocol.record.ValueType;
 import io.camunda.zeebe.protocol.record.intent.ProcessInstanceIntent;
 import io.camunda.zeebe.protocol.record.intent.VariableIntent;
+import io.camunda.zeebe.protocol.record.value.BpmnElementType;
 import io.camunda.zeebe.protocol.record.value.ProcessInstanceRecordValue;
 import io.camunda.zeebe.protocol.record.value.VariableRecordValue;
 import io.camunda.zeebe.test.broker.protocol.ProtocolFactory;
@@ -63,7 +64,15 @@ class RdbmsExporterITest {
   @Test
   public void shouldExportProcessInstance() {
     // given
-    final var processInstanceRecord = factory.generateRecordWithIntent(ValueType.PROCESS_INSTANCE, ProcessInstanceIntent.ELEMENT_ACTIVATED);
+    var processInstanceRecord = factory.generateRecordWithIntent(ValueType.PROCESS_INSTANCE, ProcessInstanceIntent.ELEMENT_ACTIVATED);
+    // TODO ... DIRTY!!!!!
+    while (true) {
+      processInstanceRecord = factory.generateRecordWithIntent(ValueType.PROCESS_INSTANCE, ProcessInstanceIntent.ELEMENT_ACTIVATED);
+      final ProcessInstanceRecordValue value = (ProcessInstanceRecordValue) processInstanceRecord.getValue();
+      if (value.getBpmnElementType() == BpmnElementType.PROCESS) {
+        break;
+      }
+    }
 
     // when
     exporter.export(processInstanceRecord);

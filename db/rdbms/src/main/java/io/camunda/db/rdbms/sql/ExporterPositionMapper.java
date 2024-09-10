@@ -5,11 +5,16 @@
  * Licensed under the Camunda License 1.0. You may not use this file
  * except in compliance with the Camunda License 1.0.
  */
-package io.camunda.db.rdbms.queue;
+package io.camunda.db.rdbms.sql;
 
-public enum ContextType {
+import io.camunda.db.rdbms.domain.ExporterPositionModel;
 
-  EXPORTER_POSITION,
-  PROCESS_INSTANCE,
-  VARIABLE,
+public interface ExporterPositionMapper {
+
+  void insert(ExporterPositionModel variable);
+
+  void update(ExporterPositionModel variable);
+
+  ExporterPositionModel findOne(Long key);
+
 }
