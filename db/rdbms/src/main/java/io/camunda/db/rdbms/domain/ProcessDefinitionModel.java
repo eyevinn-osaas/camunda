@@ -7,24 +7,11 @@
  */
 package io.camunda.db.rdbms.domain;
 
-import java.time.OffsetDateTime;
-
-public record ProcessInstanceModel(
-    Long processInstanceKey,
-    String bpmnProcessId,
+public record ProcessDefinitionModel(
     Long processDefinitionKey,
-    State state,
-    OffsetDateTime startDate,
-    OffsetDateTime endDate,
+    String bpmnProcessId,
     String tenantId,
-    Long parentProcessInstanceKey,
-    Long parentElementInstanceKey,
-    int version
+    int version,
+    String versionTag
 ) {
-
-  public enum State {
-    ACTIVE,
-    COMPLETED,
-    CANCELED
-  }
 }

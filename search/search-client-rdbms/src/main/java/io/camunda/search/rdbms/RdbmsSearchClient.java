@@ -33,7 +33,7 @@ public class RdbmsSearchClient implements CamundaSearchClient {
     if (searchRequest.index().stream().anyMatch(s -> s.startsWith("operate-list-view"))) {
       final var bpmnProcessId = getBpmnProcessId(searchRequest.query());
       if (bpmnProcessId != null) {
-        final var processInstance = rdbmsService.getProcessRdbmsService().findOne(42L);
+        final var processInstance = rdbmsService.getProcessInstanceRdbmsService().findOne(42L);
 
         return Either.right(new SearchQueryResponse(1, "bla", List.of(
             new SearchQueryHit.Builder()

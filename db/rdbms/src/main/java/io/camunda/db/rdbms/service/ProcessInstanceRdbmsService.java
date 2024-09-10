@@ -13,12 +13,12 @@ import io.camunda.db.rdbms.queue.ExecutionQueue;
 import io.camunda.db.rdbms.queue.QueueItem;
 import io.camunda.db.rdbms.sql.ProcessInstanceMapper;
 
-public class ProcessRdbmsService {
+public class ProcessInstanceRdbmsService {
 
   private final ExecutionQueue executionQueue;
   private final ProcessInstanceMapper processInstanceMapper;
 
-  public ProcessRdbmsService(final ExecutionQueue executionQueue, final ProcessInstanceMapper processInstanceMapper) {
+  public ProcessInstanceRdbmsService(final ExecutionQueue executionQueue, final ProcessInstanceMapper processInstanceMapper) {
     this.executionQueue = executionQueue;
     this.processInstanceMapper = processInstanceMapper;
   }
