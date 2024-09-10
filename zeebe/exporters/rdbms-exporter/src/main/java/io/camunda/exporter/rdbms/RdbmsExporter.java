@@ -45,6 +45,8 @@ public class RdbmsExporter implements Exporter {
         .ifPresent(service -> {
           rdbmsService = service;
           registerHandler();
+
+
         });
 
     LOG.info("[RDBMS Exporter] RDBMS Exporter configured!");
@@ -55,9 +57,16 @@ public class RdbmsExporter implements Exporter {
     this.controller = controller;
 
     initializeRdbmsPosition();
+    lastPosition = controller.getLastExportedRecordPosition();
+    if (exporterRdbmsPosition.lastExportedPosition() > -1 && lastPosition <= exporterRdbmsPosition.lastExportedPosition()) {
+      // This is needed since the brokers last exported position is from it's last snapshot and kann be different than ours.
+      lastPosition = exporterRdbmsPosition.lastExportedPosition();
+      updatePositionInBroker();
+    }
+
     rdbmsService.executionQueue().registerPreFlushListener(this::updatePositionInRdbms);
     rdbmsService.executionQueue().registerPostFlushListener(this::updatePositionInBroker);
-    LOG.info("[RDBMS Exporter] Exporter opened");
+    LOG.info("[RDBMS Exporter] Exporter opened with last exported position {}", lastPosition);
   }
 
   @Override
@@ -78,25 +87,21 @@ public class RdbmsExporter implements Exporter {
         record.getValueType(),
         record.getIntent());
 
-    if (record.getPosition() <= exporterRdbmsPosition.lastExportedPosition()) {
-      LOG.debug("[RDBMS Exporter] Skip record since it was already exported.");
-      return;
-    }
-
     if (registeredHandlers.containsKey(record.getValueType())) {
       final var handler = registeredHandlers.get(record.getValueType());
-      lastPosition = record.getPosition();
       if (handler.canExport(record)) {
         LOG.debug("[RDBMS Exporter] Exporting record {} with handler {}", record.getValue(),
             handler.getClass());
         handler.export(record);
       } else {
-        LOG.debug("[RDBMS Exporter] Handler {} can not export record {}", handler.getClass(),
+        LOG.trace("[RDBMS Exporter] Handler {} can not export record {}", handler.getClass(),
             record.getValueType());
       }
     } else {
-      LOG.debug("[RDBMS Exporter] No registered handler found for {}", record.getValueType());
+      LOG.trace("[RDBMS Exporter] No registered handler found for {}", record.getValueType());
     }
+
+    lastPosition = record.getPosition();
   }
 
   private void registerHandler() {
@@ -136,7 +141,7 @@ public class RdbmsExporter implements Exporter {
           LocalDateTime.now(),
           LocalDateTime.now()
       );
-      rdbmsService.getExporterPositionRdbmsService().create(exporterRdbmsPosition);
+      rdbmsService.getExporterPositionRdbmsService().createWithoutQueue(exporterRdbmsPosition);
       LOG.debug("[RDBMS Exporter] Initialize position in rdbms");
     } else {
       LOG.debug("[RDBMS Exporter] Found position in rdbms for this exporter: {}", exporterRdbmsPosition);
