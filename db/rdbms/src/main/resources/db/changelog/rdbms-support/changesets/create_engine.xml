@@ -22,6 +22,7 @@
         <constraints primaryKey="true"/>
       </column>
       <column name="BPMN_PROCESS_ID" type="VARCHAR(200)" />
+      <column name="NAME" type="VARCHAR(200)" />
       <column name="TENANT_ID" type="VARCHAR(200)" />
       <column name="VERSION" type="NUMBER" />
       <column name="VERSION_TAG" type="VARCHAR(200)" />

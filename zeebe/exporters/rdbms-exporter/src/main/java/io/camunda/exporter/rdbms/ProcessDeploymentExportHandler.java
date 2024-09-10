@@ -9,10 +9,11 @@ package io.camunda.exporter.rdbms;
 
 import io.camunda.db.rdbms.domain.ProcessDefinitionModel;
 import io.camunda.db.rdbms.service.ProcessDefinitionRdbmsService;
-import io.camunda.zeebe.protocol.impl.record.value.deployment.ProcessRecord;
+import io.camunda.operate.entities.ProcessEntity;
 import io.camunda.zeebe.protocol.record.Record;
 import io.camunda.zeebe.protocol.record.intent.ProcessIntent;
 import io.camunda.zeebe.protocol.record.value.deployment.Process;
+import io.camunda.operate.zeebeimport.util.XMLUtil;
 
 public class ProcessDeploymentExportHandler implements RdbmsExportHandler<Process> {
 
@@ -34,12 +35,15 @@ public class ProcessDeploymentExportHandler implements RdbmsExportHandler<Proces
   }
 
   private ProcessDefinitionModel map(final Process value) {
+    var xml = new XMLUtil().extractDiagramData(value.getResource(), value.getBpmnProcessId());
+
     return new ProcessDefinitionModel(
         value.getProcessDefinitionKey(),
         value.getBpmnProcessId(),
+        xml.map(ProcessEntity::getName).orElse(null),
         value.getTenantId(),
-        value.getVersion(),
-        value.getVersionTag()
+        value.getVersionTag(),
+        value.getVersion()
     );
   }
 }

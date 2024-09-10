@@ -8,6 +8,7 @@
 package io.camunda.search.rdbms;
 
 import io.camunda.db.rdbms.RdbmsService;
+import io.camunda.db.rdbms.domain.ProcessDefinitionModel;
 import io.camunda.db.rdbms.domain.ProcessInstanceFilter;
 import io.camunda.search.clients.CamundaSearchClient;
 import io.camunda.search.clients.core.SearchQueryHit;
@@ -40,7 +41,7 @@ public class RdbmsSearchClient implements CamundaSearchClient {
             processInstances.stream().map(pi ->
                 new SearchQueryHit.Builder()
                     .source(new ProcessInstanceEntity(
-                        pi.processInstanceKey(), null, pi.version(), pi.bpmnProcessId(),
+                        pi.processInstanceKey(), rdbmsService.getProcessDeploymentRdbmsService().findOne(pi.processDefinitionKey(), pi.version()).map(ProcessDefinitionModel::bpmnProcessId).orElse(pi.bpmnProcessId()), pi.version(), pi.bpmnProcessId(),
                         pi.parentProcessInstanceKey(), pi.parentElementInstanceKey(), pi.startDate().toString(),
                         null, pi.state().name(), null,
                         null, pi.processDefinitionKey(), pi.tenantId(),

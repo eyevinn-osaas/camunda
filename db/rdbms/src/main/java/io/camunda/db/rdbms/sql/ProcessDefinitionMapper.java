@@ -8,12 +8,11 @@
 package io.camunda.db.rdbms.sql;
 
 import io.camunda.db.rdbms.domain.ProcessDefinitionModel;
+import java.util.Map;
 
 public interface ProcessDefinitionMapper {
 
   void insert(ProcessDefinitionModel processDeployment);
 
-  ProcessDefinitionModel findOne(Long key);
-
-  ProcessDefinitionModel findOneByBpmnProcessId(Long bpmnProcessId);
+  ProcessDefinitionModel findOne(Map<String, Object> parameters);
 }
